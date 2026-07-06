@@ -451,7 +451,7 @@ export function SpaceEnvironment({ reducedMotion, scrollState }: SpaceEnvironmen
       <pointLight position={[16, -10, -20]} intensity={0.65} color="#5d6887" distance={180} />
 
       <StarfieldLayer
-        count={1400}
+        count={2800}
         spread={[160, 96]}
         forwardSpan={920}
         sizeRange={[0.2, 0.38]}
@@ -463,7 +463,7 @@ export function SpaceEnvironment({ reducedMotion, scrollState }: SpaceEnvironmen
         scrollState={scrollState}
       />
       <StarfieldLayer
-        count={1100}
+        count={2200}
         spread={[114, 68]}
         forwardSpan={480}
         sizeRange={[0.28, 0.62]}
@@ -475,7 +475,7 @@ export function SpaceEnvironment({ reducedMotion, scrollState }: SpaceEnvironmen
         scrollState={scrollState}
       />
       <StarfieldLayer
-        count={360}
+        count={720}
         spread={[46, 28]}
         forwardSpan={132}
         sizeRange={[0.54, 1.22]}

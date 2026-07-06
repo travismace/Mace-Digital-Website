@@ -3,6 +3,7 @@
 :root {
   --background: #000000;
   --foreground: #eef2f7;
+  --scroll-distance: 900vh;
 }
 
 @theme inline {
@@ -20,13 +21,18 @@ html,
 body {
   margin: 0;
   min-height: 100%;
-  overflow: hidden;
   background: #000000;
+}
+
+html {
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 body {
   color: var(--foreground);
   font-family: var(--font-plus-jakarta), Arial, sans-serif;
+  overflow-x: hidden;
 }
 
 canvas {
@@ -35,115 +41,32 @@ canvas {
   height: 100% !important;
 }
 
-.world-page {
+.camera-architecture {
   position: relative;
-  width: 100vw;
-  height: 100vh;
-  overflow: hidden;
-  isolation: isolate;
-  background:
-    radial-gradient(circle at 50% 46%, rgba(5, 8, 14, 0.16), transparent 22%),
-    linear-gradient(180deg, #000000 0%, #010102 45%, #000000 100%);
+  min-height: var(--scroll-distance);
+  background: #000000;
 }
 
-.world-canvas,
-.world-fallback {
+.camera-architecture__journey {
+  position: relative;
+  min-height: var(--scroll-distance);
+}
+
+.camera-architecture__stage {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: hidden;
+  background: #000000;
+}
+
+.camera-architecture__canvas-shell {
   position: absolute;
   inset: 0;
 }
 
-.world-canvas {
-  z-index: 2;
-}
-
-.world-fallback {
-  z-index: 1;
-  overflow: hidden;
-  background:
-    radial-gradient(circle at 50% 46%, rgba(5, 8, 14, 0.1), transparent 18%),
-    linear-gradient(180deg, #000000 0%, #010102 45%, #000000 100%);
-}
-
-.world-fallback__stars,
-.world-fallback__haze {
-  position: absolute;
-  inset: -12%;
-}
-
-.world-fallback__stars {
-  opacity: 0.12;
-  animation: starDrift 120s linear infinite;
-}
-
-.world-fallback__stars--far {
-  background-image:
-    radial-gradient(circle, rgba(255, 255, 255, 0.78) 0 0.8px, transparent 1.15px),
-    radial-gradient(circle, rgba(222, 231, 243, 0.5) 0 0.65px, transparent 1.05px);
-  background-size: 320px 320px, 420px 420px;
-  background-position: 0 0, 120px 80px;
-  animation-duration: 180s;
-}
-
-.world-fallback__stars--mid {
-  background-image:
-    radial-gradient(circle, rgba(255, 255, 255, 0.84) 0 0.85px, transparent 1.2px),
-    radial-gradient(circle, rgba(212, 225, 245, 0.54) 0 0.7px, transparent 1.1px);
-  background-size: 240px 240px, 320px 320px;
-  background-position: 40px 80px, 110px 0;
-  opacity: 0.09;
-  animation-duration: 140s;
-}
-
-.world-fallback__stars--near {
-  background-image:
-    radial-gradient(circle, rgba(255, 255, 255, 0.9) 0 0.95px, transparent 1.25px),
-    radial-gradient(circle, rgba(232, 240, 252, 0.48) 0 0.75px, transparent 1.15px);
-  background-size: 180px 180px, 260px 260px;
-  background-position: 40px 40px, 90px 130px;
-  opacity: 0.06;
-  animation-duration: 100s;
-}
-
-.world-fallback__haze {
-  filter: blur(70px);
-  mix-blend-mode: screen;
-  animation: hazeDrift 90s ease-in-out infinite alternate;
-}
-
-.world-fallback__haze--a {
-  background:
-    radial-gradient(circle at 30% 35%, rgba(20, 28, 42, 0.12), transparent 14%),
-    radial-gradient(circle at 68% 58%, rgba(18, 20, 32, 0.08), transparent 16%);
-}
-
-.world-fallback__haze--b {
-  background:
-    radial-gradient(circle at 62% 30%, rgba(28, 22, 40, 0.08), transparent 12%),
-    radial-gradient(circle at 40% 70%, rgba(14, 20, 32, 0.07), transparent 14%);
-  animation-duration: 120s;
-}
-
-@keyframes starDrift {
-  0% {
-    transform: translate3d(0, 0, 0);
-  }
-  100% {
-    transform: translate3d(-0.9%, 1.2%, 0);
-  }
-}
-
-@keyframes hazeDrift {
-  0% {
-    transform: translate3d(-0.6%, -0.3%, 0) scale(1);
-  }
-  100% {
-    transform: translate3d(0.8%, 0.5%, 0) scale(1.02);
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .world-fallback__stars,
-  .world-fallback__haze {
-    animation-duration: 220s;
+  :root {
+    --scroll-distance: 700vh;
   }
 }

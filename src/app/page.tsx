@@ -1,5 +1,5 @@
-import { ImmersiveWorld } from "../components/ImmersiveWorld";
+import { CinematicCameraExperience } from "../components/CinematicCameraExperience";
 
 export default function Home() {
-  return <ImmersiveWorld />;
+  return <CinematicCameraExperience />;
 }

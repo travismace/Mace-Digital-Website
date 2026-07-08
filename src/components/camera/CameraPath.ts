@@ -22,38 +22,32 @@ export class CameraPath {
   constructor() {
     this.curve = new CatmullRomCurve3(
       [
-        new Vector3(-0.4, 0.12, 8),
-        new Vector3(0.18, 0.32, -10),
-        new Vector3(0.62, 0.54, -34),
-        new Vector3(0.28, 0.16, -62),
-        new Vector3(-0.24, -0.18, -98),
-        new Vector3(-0.58, -0.06, -144),
-        new Vector3(-0.22, 0.3, -198),
-        new Vector3(0.26, 0.48, -262),
-        new Vector3(0.52, 0.18, -334),
-        new Vector3(0.08, -0.2, -418),
+        new Vector3(-1.08, -0.12, 42),
+        new Vector3(-0.76, -0.08, -68),
+        new Vector3(-0.22, -0.12, -242),
+        new Vector3(0.22, -0.22, -472),
+        new Vector3(0.18, -0.38, -682),
+        new Vector3(0.08, -0.68, -804),
+        new Vector3(0.05, -0.92, -848),
+        new Vector3(0.03, -1.08, -872),
       ],
       false,
       "catmullrom",
-      0.85
+      0.84
     );
 
     this.lookCurve = new CatmullRomCurve3(
       [
-        new Vector3(-0.12, 0.08, -12),
-        new Vector3(0.22, 0.24, -30),
-        new Vector3(0.44, 0.42, -56),
-        new Vector3(0.08, 0.1, -90),
-        new Vector3(-0.36, -0.08, -132),
-        new Vector3(-0.42, 0.06, -186),
-        new Vector3(-0.1, 0.22, -248),
-        new Vector3(0.3, 0.3, -318),
-        new Vector3(0.36, 0.1, -392),
-        new Vector3(0.06, -0.02, -472),
+        new Vector3(-0.16, -0.42, -80),
+        new Vector3(-0.06, -0.5, -248),
+        new Vector3(0.04, -0.7, -506),
+        new Vector3(0.06, -1.0, -742),
+        new Vector3(0.04, -1.18, -836),
+        new Vector3(0.04, -1.16, -820),
       ],
       false,
       "catmullrom",
-      0.78
+      0.76
     );
   }
 

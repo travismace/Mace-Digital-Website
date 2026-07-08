@@ -23,6 +23,7 @@ import {
   Vector3,
 } from "three";
 import type { ScrollState } from "./camera/ScrollController";
+import { DigitalPlanet } from "./DigitalPlanet";
 
 type SpaceEnvironmentProps = {
   reducedMotion: boolean;
@@ -198,12 +199,15 @@ function StarfieldLayer({
 
     const time = clock.elapsedTime;
     const velocity = MathUtils.clamp(Math.abs(scrollState.current.velocity) / 2600, 0, 1);
+    const scrollProgress = scrollState.current.progress;
 
     materialRef.current.uniforms.uTime.value = time;
     materialRef.current.uniforms.uPixelRatio.value = gl.getPixelRatio();
     materialRef.current.uniforms.uVelocity.value = velocity;
+    materialRef.current.uniforms.uScrollProgress.value = scrollProgress;
     materialRef.current.uniforms.uCameraPosition.value.copy(camera.position);
     materialRef.current.uniforms.uForwardSpan.value = forwardSpan;
+    materialRef.current.uniforms.uLayerBias.value = layerBias;
     materialRef.current.uniforms.uStreakStrength.value = streakStrength;
   });
 
@@ -218,8 +222,10 @@ function StarfieldLayer({
           uTime: { value: 0 },
           uPixelRatio: { value: 1 },
           uVelocity: { value: 0 },
+          uScrollProgress: { value: 0 },
           uCameraPosition: { value: new Vector3() },
           uForwardSpan: { value: forwardSpan },
+          uLayerBias: { value: layerBias },
           uStreakStrength: { value: streakStrength },
         }}
         vertexColors
@@ -232,8 +238,10 @@ function StarfieldLayer({
           uniform float uTime;
           uniform float uPixelRatio;
           uniform float uVelocity;
+          uniform float uScrollProgress;
           uniform vec3 uCameraPosition;
           uniform float uForwardSpan;
+          uniform float uLayerBias;
           uniform float uStreakStrength;
           varying vec3 vColor;
           varying float vAlpha;
@@ -247,9 +255,13 @@ function StarfieldLayer({
             float distanceAhead = max(0.0, wrappedForward);
             float normalizedDepth = clamp(distanceAhead / uForwardSpan, 0.0, 1.0);
             float proximity = 1.0 - normalizedDepth;
+            float parallaxDepth = proximity * proximity;
+            float travelPhase = uScrollProgress * 2.0 - 1.0;
 
             pos.x += sin(uTime * (0.01 + aDrift * 0.012) + aPhase) * (0.004 + proximity * 0.012);
             pos.y += cos(uTime * (0.008 + aDrift * 0.01) + aPhase * 1.17) * (0.003 + proximity * 0.009);
+            pos.x += travelPhase * (aDrift - 0.3) * (0.18 + uLayerBias * 0.52) * parallaxDepth;
+            pos.y += sin(aPhase * 1.7) * travelPhase * (0.08 + uLayerBias * 0.2) * parallaxDepth;
 
             vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
             gl_Position = projectionMatrix * mvPosition;
@@ -451,8 +463,20 @@ export function SpaceEnvironment({ reducedMotion, scrollState }: SpaceEnvironmen
       <pointLight position={[16, -10, -20]} intensity={0.65} color="#5d6887" distance={180} />
 
       <StarfieldLayer
-        count={2800}
-        spread={[160, 96]}
+        count={2600}
+        spread={[220, 168]}
+        forwardSpan={1500}
+        sizeRange={[0.16, 0.28]}
+        colorA="#dfe9fb"
+        colorB="#afbdd3"
+        rareBrightChance={0.0002}
+        layerBias={0}
+        streakStrength={0.08}
+        scrollState={scrollState}
+      />
+      <StarfieldLayer
+        count={3200}
+        spread={[176, 124]}
         forwardSpan={920}
         sizeRange={[0.2, 0.38]}
         colorA="#e8f0ff"
@@ -463,8 +487,8 @@ export function SpaceEnvironment({ reducedMotion, scrollState }: SpaceEnvironmen
         scrollState={scrollState}
       />
       <StarfieldLayer
-        count={2200}
-        spread={[114, 68]}
+        count={2500}
+        spread={[132, 92]}
         forwardSpan={480}
         sizeRange={[0.28, 0.62]}
         colorA="#eef4ff"
@@ -475,8 +499,8 @@ export function SpaceEnvironment({ reducedMotion, scrollState }: SpaceEnvironmen
         scrollState={scrollState}
       />
       <StarfieldLayer
-        count={720}
-        spread={[46, 28]}
+        count={840}
+        spread={[58, 42]}
         forwardSpan={132}
         sizeRange={[0.54, 1.22]}
         colorA="#ffffff"
@@ -487,6 +511,7 @@ export function SpaceEnvironment({ reducedMotion, scrollState }: SpaceEnvironmen
         scrollState={scrollState}
       />
 
+      <DigitalPlanet reducedMotion={reducedMotion} scrollState={scrollState} />
       <ShootingStar reducedMotion={reducedMotion} />
 
       <EffectComposer multisampling={0}>

@@ -3,7 +3,7 @@
 :root {
   --background: #000000;
   --foreground: #eef2f7;
-  --scroll-distance: 900vh;
+  --scroll-distance: 400vh;
 }
 
 @theme inline {
@@ -43,19 +43,19 @@ canvas {
 
 .camera-architecture {
   position: relative;
-  min-height: var(--scroll-distance);
+  height: var(--scroll-distance);
   background: #000000;
 }
 
 .camera-architecture__journey {
   position: relative;
-  min-height: var(--scroll-distance);
+  height: 100%;
 }
 
 .camera-architecture__stage {
-  position: sticky;
-  top: 0;
-  height: 100vh;
+  position: fixed;
+  inset: 0;
+  height: 100svh;
   overflow: hidden;
   background: #000000;
 }
@@ -67,6 +67,6 @@ canvas {
 
 @media (prefers-reduced-motion: reduce) {
   :root {
-    --scroll-distance: 700vh;
+    --scroll-distance: 320vh;
   }
 }

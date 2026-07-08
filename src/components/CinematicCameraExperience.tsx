@@ -41,9 +41,9 @@ export function CinematicCameraExperience() {
 
   return (
     <main ref={rootRef} className="camera-architecture" aria-label="Cinematic camera architecture testbed">
-      <ScrollController rootRef={rootRef} onChange={updateScrollState} />
+      <ScrollController rootRef={rootRef} onChange={updateScrollState} scrollDistanceVh={400} />
 
-      <section className="camera-architecture__journey">
+      <div className="camera-architecture__journey">
         <div className="camera-architecture__stage">
           <div className="camera-architecture__canvas-shell">
             <Canvas dpr={[1, 1.75]} gl={{ antialias: true, alpha: false, powerPreference: "high-performance" }}>
@@ -54,7 +54,7 @@ export function CinematicCameraExperience() {
             </Canvas>
           </div>
         </div>
-      </section>
+      </div>
     </main>
   );
 }

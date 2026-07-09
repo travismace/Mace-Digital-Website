@@ -4,6 +4,7 @@ import { MutableRefObject, type RefObject, useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import {
   AdditiveBlending,
+  BackSide,
   BufferGeometry,
   Color,
   DoubleSide,
@@ -12,6 +13,7 @@ import {
   Group,
   LineBasicMaterial,
   MathUtils,
+  DirectionalLight,
   PointLight,
   PointsMaterial,
   ShaderMaterial,
@@ -33,6 +35,7 @@ type ElectricShellProps = {
 type InteriorStormProps = {
   reducedMotion: boolean;
   intensityRef: RefObject<number>;
+  travelRef: RefObject<number>;
 };
 
 type ExteriorEnergyProps = {
@@ -50,6 +53,8 @@ const PLANET_RADIUS = 46;
 const PLANET_CENTER = new Vector3(0.04, -1.16, -820);
 const SURFACE_START_DISTANCE = 900;
 const SURFACE_END_DISTANCE = 118;
+const ATMOSPHERE_START_DISTANCE = PLANET_RADIUS * 2.05;
+const ATMOSPHERE_FULL_DISTANCE = PLANET_RADIUS * 0.78;
 const INSIDE_START_DISTANCE = PLANET_RADIUS * 1.06;
 const INSIDE_FULL_DISTANCE = PLANET_RADIUS * 0.22;
 
@@ -63,8 +68,8 @@ function pseudo(seed: number) {
 }
 
 function createParticleData() {
-  const count = 320;
-  const positions = new Float32Array(count * 3);
+  const count = 180;
+  const positions = new Float32Array(count * 2 * 3);
   const base = new Float32Array(count * 3);
   const seeds = new Float32Array(count);
 
@@ -94,8 +99,8 @@ function createParticleData() {
 }
 
 function createArcData() {
-  const arcCount = 22;
-  const segmentsPerArc = 14;
+  const arcCount = 14;
+  const segmentsPerArc = 12;
   const positions = new Float32Array(arcCount * segmentsPerArc * 2 * 3);
   const seeds = new Float32Array(arcCount);
 
@@ -111,8 +116,8 @@ function createArcData() {
 }
 
 function createTrailData() {
-  const count = 140;
-  const positions = new Float32Array(count * 3);
+  const count = 72;
+  const positions = new Float32Array(count * 2 * 3);
   const seeds = new Float32Array(count);
 
   for (let i = 0; i < count; i += 1) {
@@ -135,8 +140,8 @@ const ARC_DATA = createArcData();
 const TRAIL_DATA = createTrailData();
 
 function createAtmosphereArcData() {
-  const arcCount = 34;
-  const segmentsPerArc = 16;
+  const arcCount = 18;
+  const segmentsPerArc = 12;
   const positions = new Float32Array(arcCount * segmentsPerArc * 2 * 3);
   const seeds = new Float32Array(arcCount);
 
@@ -152,7 +157,7 @@ function createAtmosphereArcData() {
 }
 
 function createMagneticCurrentData() {
-  const count = 140;
+  const count = 72;
   const positions = new Float32Array(count * 2 * 3);
   const seeds = new Float32Array(count);
 
@@ -168,7 +173,7 @@ function createMagneticCurrentData() {
 }
 
 function createChargedParticleData() {
-  const count = 90;
+  const count = 40;
   const positions = new Float32Array(count * 2 * 3);
   const seeds = new Float32Array(count);
 
@@ -184,8 +189,8 @@ function createChargedParticleData() {
 }
 
 function createSpaceLightningData() {
-  const arcCount = 16;
-  const segmentsPerArc = 15;
+  const arcCount = 8;
+  const segmentsPerArc = 12;
   const positions = new Float32Array(arcCount * segmentsPerArc * 2 * 3);
   const seeds = new Float32Array(arcCount);
 
@@ -201,7 +206,7 @@ function createSpaceLightningData() {
 }
 
 function createFlareParticleData() {
-  const count = 60;
+  const count = 24;
   const positions = new Float32Array(count * 3);
   const seeds = new Float32Array(count);
 
@@ -309,6 +314,7 @@ function ElectricShell({ materialRef, scale = 1, opacityBoost = 1 }: ElectricShe
             vec3 localDir = normalize(vLocalPosition);
 
             float facing = max(dot(normal, viewDir), -1.0);
+            float frontFacing = pow(abs(facing), 1.35);
             float rim = pow(1.0 - abs(facing), 2.15);
             float internalRim = pow(1.0 - max(dot(-normal, viewDir), 0.0), 2.5);
             float fresnel = max(rim, internalRim * 0.45);
@@ -323,6 +329,7 @@ function ElectricShell({ materialRef, scale = 1, opacityBoost = 1 }: ElectricShe
             float veins = 1.0 - smoothstep(0.03, 0.12, veinField);
             float arcs = smoothstep(0.68, 0.96, flowC + flowA * 0.25);
             float electric = veins * (0.7 + flowA * 0.6) + arcs * 1.15;
+            float frontalCharge = smoothstep(0.18, 0.88, flowA * 0.5 + flowB * 0.35 + flowC * 0.25);
 
             vec3 cyan = vec3(0.12, 0.82, 1.0);
             vec3 purple = vec3(0.62, 0.38, 1.0);
@@ -330,15 +337,18 @@ function ElectricShell({ materialRef, scale = 1, opacityBoost = 1 }: ElectricShe
             vec3 glassTint = mix(vec3(0.02, 0.09, 0.18), vec3(0.04, 0.16, 0.34), flowA * 0.6 + 0.2);
 
             float opacity = (0.08 + fresnel * 0.54 + electric * 0.22) * uOpacityBoost;
-            opacity *= mix(1.0, 0.12, uInside);
+            opacity *= mix(1.0, 0.6, uInside);
             opacity += (0.06 + uApproach * 0.1) * (1.0 - uInside);
+            opacity += uInside * (0.16 + electric * 0.16 + arcs * 0.12);
+            opacity += frontalCharge * frontFacing * (0.06 + uApproach * 0.16 + uInside * 0.08);
 
             vec3 color = glassTint * 0.5;
             color += electricColor * electric * (0.65 + uApproach * 0.85);
             color += electricColor * fresnel * (0.42 + uApproach * 0.5);
             color += vec3(0.14, 0.5, 1.0) * arcs * 0.35;
+            color += electricColor * uInside * (0.28 + flowA * 0.34 + arcs * 0.42);
+            color += cyan * frontalCharge * frontFacing * (0.16 + uApproach * 0.42 + uInside * 0.14);
 
-            if (opacity < 0.02) discard;
             gl_FragColor = vec4(color, opacity);
           }
         `}
@@ -349,17 +359,17 @@ function ElectricShell({ materialRef, scale = 1, opacityBoost = 1 }: ElectricShe
 
 function InteriorEnergyVolume({ materialRef }: { materialRef: RefObject<ShaderMaterial | null> }) {
   return (
-    <mesh scale={[0.94, 0.94, 0.94]}>
-      <sphereGeometry args={[PLANET_RADIUS, 120, 120]} />
+    <mesh scale={[0.96, 0.96, 0.96]}>
+      <sphereGeometry args={[PLANET_RADIUS, 160, 160]} />
       <shaderMaterial
         ref={materialRef}
         transparent
         depthWrite={false}
-        side={DoubleSide}
-        blending={AdditiveBlending}
+        side={BackSide}
         uniforms={{
           uTime: { value: 0 },
           uIntensity: { value: 0 },
+          uTravel: { value: 0 },
         }}
         vertexShader={`
           varying vec3 vWorldPosition;
@@ -375,6 +385,7 @@ function InteriorEnergyVolume({ materialRef }: { materialRef: RefObject<ShaderMa
         fragmentShader={`
           uniform float uTime;
           uniform float uIntensity;
+          uniform float uTravel;
           varying vec3 vWorldPosition;
           varying vec3 vLocalPosition;
           ${sharedNoise}
@@ -382,24 +393,49 @@ function InteriorEnergyVolume({ materialRef }: { materialRef: RefObject<ShaderMa
           void main() {
             vec3 localDir = normalize(vLocalPosition);
             vec3 viewDir = normalize(cameraPosition - vWorldPosition);
-            float facing = 1.0 - abs(dot(localDir, viewDir));
+            float wallFacing = 1.0 - abs(dot(localDir, viewDir));
+            float wallWrap = smoothstep(0.02, 0.98, wallFacing);
 
-            float stormA = fbm(localDir * 8.0 + vec3(uTime * 0.22, -uTime * 0.18, uTime * 0.16));
-            float stormB = fbm(localDir * 14.0 + vec3(-uTime * 0.48, uTime * 0.33, -uTime * 0.28));
-            float stormC = fbm(localDir * 24.0 + vec3(uTime * 0.8, uTime * 0.62, -uTime * 0.54));
+            float chamberA = fbm(localDir * 5.4 + vec3(uTime * 0.05, -uTime * 0.04, uTime * 0.03));
+            float chamberB = fbm(localDir * 11.0 + vec3(-uTime * 0.18, uTime * 0.12, -uTime * 0.1));
+            float chamberC = fbm(localDir * 18.0 + vec3(uTime * 0.32, -uTime * 0.28, uTime * 0.22));
+            float chamberD = fbm(localDir * 28.0 + vec3(-uTime * 0.74, uTime * 0.58, -uTime * 0.48));
+            float chamberE = fbm(localDir * 46.0 + vec3(uTime * 1.2, -uTime * 1.0, uTime * 0.88));
 
-            float lightning = 1.0 - smoothstep(0.02, 0.09, abs(stormB - 0.5));
-            float plasma = smoothstep(0.56, 0.96, stormA + stormC * 0.38);
-            float veil = smoothstep(0.18, 0.92, stormA) * (0.35 + facing * 0.65);
+            float wallShadow = smoothstep(0.18, 0.92, chamberA * 0.72 + chamberB * 0.28);
+            float cavernBreakup = smoothstep(0.16, 0.9, chamberB * 0.55 + chamberC * 0.5 + wallWrap * 0.24);
+            float electricVeins = 1.0 - smoothstep(0.018, 0.06, abs(chamberD - 0.52));
+            float lightningArcs = 1.0 - smoothstep(0.012, 0.042, abs(chamberE - 0.5));
+            float plasmaVeil = smoothstep(0.42, 0.96, chamberC * 0.68 + chamberD * 0.46 + chamberE * 0.24);
+            float currentBands = smoothstep(0.2, 0.9, chamberB * 0.5 + chamberE * 0.44);
+            float waveField = sin((localDir.y * 20.0) + chamberB * 7.0 + chamberD * 9.0 + uTime * (1.8 + uTravel * 1.2)) * 0.5 + 0.5;
+            float pulseWave = smoothstep(0.48, 0.98, waveField + chamberC * 0.3 + uTravel * 0.12);
+            float forwardEnergy = smoothstep(0.1, 0.95, chamberA * 0.32 + chamberD * 0.48 + waveField * 0.36 + uTravel * 0.18);
 
-            vec3 cyan = vec3(0.14, 0.84, 1.0);
-            vec3 purple = vec3(0.72, 0.38, 1.0);
-            vec3 color = mix(cyan, purple, smoothstep(0.3, 0.95, stormC));
-            color *= lightning * 1.15 + plasma * 0.75 + veil * 0.35;
-            color += vec3(0.25, 0.85, 1.0) * plasma * 0.4;
+            vec3 darkCore = vec3(0.01, 0.02, 0.045);
+            vec3 deepBlue = vec3(0.03, 0.09, 0.22);
+            vec3 cyan = vec3(0.16, 0.84, 1.0);
+            vec3 electricBlue = vec3(0.38, 0.9, 1.0);
+            vec3 purple = vec3(0.6, 0.32, 1.0);
+            vec3 whiteBlue = vec3(0.9, 0.98, 1.0);
 
-            float alpha = (lightning * 0.42 + plasma * 0.28 + veil * 0.18) * uIntensity;
-            if (alpha < 0.02) discard;
+            vec3 baseColor = mix(darkCore, deepBlue, wallShadow * 0.7 + cavernBreakup * 0.18);
+            baseColor += purple * (currentBands * 0.1 + chamberC * 0.06);
+
+            vec3 emissive = vec3(0.0);
+            emissive += cyan * electricVeins * (0.62 + wallWrap * 0.42);
+            emissive += electricBlue * lightningArcs * (0.82 + uTravel * 0.58);
+            emissive += purple * plasmaVeil * 0.28;
+            emissive += cyan * pulseWave * 0.48;
+            emissive += whiteBlue * lightningArcs * 0.34;
+            emissive += electricBlue * forwardEnergy * 0.34;
+
+            vec3 color = baseColor + emissive;
+            color *= 0.74 + wallWrap * 0.52 + uIntensity * 0.34;
+
+            float alpha = (0.3 + wallWrap * 0.36 + cavernBreakup * 0.2 + electricVeins * 0.22 + plasmaVeil * 0.16 + pulseWave * 0.16) * uIntensity;
+            alpha = clamp(alpha, 0.0, 0.97);
+
             gl_FragColor = vec4(color, alpha);
           }
         `}
@@ -408,26 +444,97 @@ function InteriorEnergyVolume({ materialRef }: { materialRef: RefObject<ShaderMa
   );
 }
 
-function InteriorStorm({ reducedMotion, intensityRef }: InteriorStormProps) {
+function InteriorCoreField({ materialRef }: { materialRef: RefObject<ShaderMaterial | null> }) {
+  return (
+    <mesh scale={[0.58, 0.58, 0.58]}>
+      <sphereGeometry args={[PLANET_RADIUS, 120, 120]} />
+      <shaderMaterial
+        ref={materialRef}
+        transparent
+        depthWrite={false}
+        side={DoubleSide}
+        blending={AdditiveBlending}
+        uniforms={{
+          uTime: { value: 0 },
+          uIntensity: { value: 0 },
+          uTravel: { value: 0 },
+        }}
+        vertexShader={`
+          varying vec3 vWorldPosition;
+          varying vec3 vLocalPosition;
+
+          void main() {
+            vLocalPosition = position;
+            vec4 worldPosition = modelMatrix * vec4(position, 1.0);
+            vWorldPosition = worldPosition.xyz;
+            gl_Position = projectionMatrix * viewMatrix * worldPosition;
+          }
+        `}
+        fragmentShader={`
+          uniform float uTime;
+          uniform float uIntensity;
+          uniform float uTravel;
+          varying vec3 vWorldPosition;
+          varying vec3 vLocalPosition;
+          ${sharedNoise}
+
+          void main() {
+            vec3 localPos = vLocalPosition / ${PLANET_RADIUS.toFixed(1)};
+            vec3 localDir = normalize(vLocalPosition);
+            vec3 viewDir = normalize(cameraPosition - vWorldPosition);
+            float viewGlow = 0.45 + 0.55 * (1.0 - abs(dot(localDir, viewDir)));
+
+            float flowA = fbm(localPos * 5.2 + vec3(uTime * 0.28, -uTime * 0.22, uTime * 0.16));
+            float flowB = fbm(localPos * 9.8 + vec3(-uTime * 0.72, uTime * 0.54, -uTime * 0.4));
+            float flowC = fbm(localPos * 15.6 + vec3(uTime * 1.1, -uTime * 0.96, uTime * 0.82));
+            float streams = smoothstep(0.44, 0.96, flowA * 0.52 + flowB * 0.5 + uTravel * 0.18);
+            float sparks = 1.0 - smoothstep(0.016, 0.05, abs(flowC - 0.5));
+            float wave = sin(localPos.z * 18.0 - uTime * (3.2 + uTravel * 2.2) + flowA * 7.0) * 0.5 + 0.5;
+            float wavePulse = smoothstep(0.48, 0.98, wave + flowB * 0.24);
+            float purpleLift = smoothstep(0.36, 0.92, flowB * 0.44 + flowC * 0.34);
+
+            vec3 cyan = vec3(0.15, 0.84, 1.0);
+            vec3 whiteBlue = vec3(0.88, 0.97, 1.0);
+            vec3 purple = vec3(0.56, 0.34, 1.0);
+            vec3 color = cyan * streams * (0.52 + viewGlow * 0.42);
+            color += whiteBlue * sparks * 0.32;
+            color += cyan * wavePulse * 0.38;
+            color += purple * purpleLift * 0.2;
+
+            float alpha = (streams * 0.28 + sparks * 0.16 + wavePulse * 0.22 + purpleLift * 0.12) * viewGlow * uIntensity;
+            alpha *= 0.78 + uTravel * 0.58;
+            alpha = clamp(alpha, 0.0, 0.62);
+
+            gl_FragColor = vec4(color, alpha);
+          }
+        `}
+      />
+    </mesh>
+  );
+}
+
+function InteriorStorm({ reducedMotion, intensityRef, travelRef }: InteriorStormProps) {
   const rootRef = useRef<Group>(null);
   const particlesRef = useRef(null);
-  const particleMaterialRef = useRef<PointsMaterial>(null);
+  const particleMaterialRef = useRef<LineBasicMaterial>(null);
   const arcLinesRef = useRef(null);
   const arcMaterialRef = useRef<LineBasicMaterial>(null);
   const trailRef = useRef(null);
-  const trailMaterialRef = useRef<PointsMaterial>(null);
+  const trailMaterialRef = useRef<LineBasicMaterial>(null);
 
   useFrame(({ clock }) => {
     const root = rootRef.current;
     const intensity = intensityRef.current ?? 0;
+    const travel = travelRef.current ?? 0;
     if (!root) return;
 
     const time = clock.elapsedTime;
-    const displayIntensity = MathUtils.smoothstep(intensity, 0.58, 0.96);
-    root.visible = displayIntensity > 0.01;
-    root.rotation.y = time * (reducedMotion ? 0.05 : 0.09);
-    root.rotation.z = Math.sin(time * 0.23) * 0.08;
-    root.scale.setScalar(1 + displayIntensity * 1.4);
+    const displayIntensity = MathUtils.smoothstep(intensity, 0.28, 0.96);
+    const travelBoost = MathUtils.smoothstep(travel, 0.02, 1);
+    root.visible = displayIntensity > 0.001;
+    root.rotation.y = time * (reducedMotion ? 0.05 : 0.09 + travelBoost * 0.08);
+    root.rotation.z = Math.sin(time * 0.23 + travelBoost * 0.6) * (0.08 + travelBoost * 0.05);
+    root.scale.setScalar(1.18 + displayIntensity * 2.65 + travelBoost * 0.42);
 
     const particlePositions = PARTICLE_DATA.positions;
     const particleBase = PARTICLE_DATA.base;
@@ -439,18 +546,28 @@ function InteriorStorm({ reducedMotion, intensityRef }: InteriorStormProps) {
       const baseX = particleBase[i * 3];
       const baseY = particleBase[i * 3 + 1];
       const baseZ = particleBase[i * 3 + 2];
-      const swirl = 0.8 + displayIntensity * 2.6;
+      const swirl = 0.8 + displayIntensity * 2.8;
+      const centerX = baseX + Math.sin(time * (0.7 + pseudo(seed) * 1.6) + seed) * swirl;
+      const centerY = baseY + Math.cos(time * (0.8 + pseudo(seed + 2.1) * 1.7) + seed * 1.4) * swirl;
+      const centerZ = baseZ + Math.sin(time * (0.65 + pseudo(seed + 5.4) * 1.8) + seed * 0.9) * swirl - travelBoost * (10 + pseudo(seed + 14.2) * 20);
+      const dirX = Math.sin(time * (1.6 + pseudo(seed + 8.1) * 1.8) + seed * 0.7);
+      const dirY = Math.cos(time * (1.4 + pseudo(seed + 10.3) * 1.4) + seed * 0.3);
+      const dirZ = Math.sin(time * (1.8 + pseudo(seed + 12.6) * 1.6) + seed * 0.5) - travelBoost * 2.4;
+      const dirLength = Math.hypot(dirX, dirY, dirZ) || 1;
+      const sparkLength = 0.6 + displayIntensity * 3.4 + travelBoost * 3.2;
 
-      particlePositions[i * 3] = baseX + Math.sin(time * (0.7 + pseudo(seed) * 1.6) + seed) * swirl;
-      particlePositions[i * 3 + 1] = baseY + Math.cos(time * (0.8 + pseudo(seed + 2.1) * 1.7) + seed * 1.4) * swirl;
-      particlePositions[i * 3 + 2] = baseZ + Math.sin(time * (0.65 + pseudo(seed + 5.4) * 1.8) + seed * 0.9) * swirl;
+      particlePositions[i * 6] = centerX - (dirX / dirLength) * sparkLength;
+      particlePositions[i * 6 + 1] = centerY - (dirY / dirLength) * sparkLength;
+      particlePositions[i * 6 + 2] = centerZ - (dirZ / dirLength) * sparkLength;
+      particlePositions[i * 6 + 3] = centerX + (dirX / dirLength) * sparkLength;
+      particlePositions[i * 6 + 4] = centerY + (dirY / dirLength) * sparkLength;
+      particlePositions[i * 6 + 5] = centerZ + (dirZ / dirLength) * sparkLength;
     }
 
     particleAttr.needsUpdate = true;
 
     if (particleMaterialRef.current) {
-      particleMaterialRef.current.opacity = 0.03 + displayIntensity * 0.62;
-      particleMaterialRef.current.size = 0.18 + displayIntensity * 2.1;
+      particleMaterialRef.current.opacity = 0.18 + displayIntensity * 0.9 + travelBoost * 0.18;
     }
 
     const arcPositions = ARC_DATA.positions;
@@ -510,7 +627,7 @@ function InteriorStorm({ reducedMotion, intensityRef }: InteriorStormProps) {
     arcAttr.needsUpdate = true;
 
     if (arcMaterialRef.current) {
-      arcMaterialRef.current.opacity = 0.05 + displayIntensity * 0.78;
+      arcMaterialRef.current.opacity = 0.08 + displayIntensity * 0.92 + travelBoost * 0.22;
     }
 
     const trailPositions = TRAIL_DATA.positions;
@@ -523,33 +640,42 @@ function InteriorStorm({ reducedMotion, intensityRef }: InteriorStormProps) {
       const angle = time * (0.4 + pseudo(seed + 1.9) * 1.3) + seed;
       const wave = Math.sin(time * (0.9 + pseudo(seed + 2.7)) + seed * 0.4) * PLANET_RADIUS * 0.12;
 
-      trailPositions[i * 3] = Math.cos(angle) * orbitRadius;
-      trailPositions[i * 3 + 1] = Math.sin(angle * 1.3) * orbitRadius * 0.38 + wave;
-      trailPositions[i * 3 + 2] = Math.sin(angle) * orbitRadius;
+      const centerX = Math.cos(angle) * orbitRadius;
+      const centerY = Math.sin(angle * 1.3) * orbitRadius * 0.38 + wave;
+      const centerZ = Math.sin(angle) * orbitRadius;
+      const tangentX = -Math.sin(angle);
+      const tangentY = Math.cos(angle * 1.3) * 0.52;
+      const tangentZ = Math.cos(angle);
+      const tangentLength = Math.hypot(tangentX, tangentY, tangentZ) || 1;
+      const trailLength = 0.7 + displayIntensity * 2.1 + travelBoost * 1.6;
+
+      trailPositions[i * 6] = centerX - (tangentX / tangentLength) * trailLength;
+      trailPositions[i * 6 + 1] = centerY - (tangentY / tangentLength) * trailLength;
+      trailPositions[i * 6 + 2] = centerZ - (tangentZ / tangentLength) * trailLength;
+      trailPositions[i * 6 + 3] = centerX + (tangentX / tangentLength) * trailLength;
+      trailPositions[i * 6 + 4] = centerY + (tangentY / tangentLength) * trailLength;
+      trailPositions[i * 6 + 5] = centerZ + (tangentZ / tangentLength) * trailLength;
     }
 
     trailAttr.needsUpdate = true;
 
     if (trailMaterialRef.current) {
-      trailMaterialRef.current.opacity = 0.015 + displayIntensity * 0.28;
-      trailMaterialRef.current.size = 0.14 + displayIntensity * 0.95;
+      trailMaterialRef.current.opacity = 0.1 + displayIntensity * 0.28 + travelBoost * 0.28;
     }
   });
 
   return (
     <group ref={rootRef} visible={false}>
-      <points ref={particlesRef} geometry={PARTICLE_DATA.geometry} frustumCulled={false}>
-        <pointsMaterial
+      <lineSegments ref={particlesRef} geometry={PARTICLE_DATA.geometry} frustumCulled={false}>
+        <lineBasicMaterial
           ref={particleMaterialRef}
           color="#89e6ff"
           transparent
           opacity={0}
-          size={1.1}
-          sizeAttenuation
           depthWrite={false}
           blending={AdditiveBlending}
         />
-      </points>
+      </lineSegments>
 
       <lineSegments ref={arcLinesRef} geometry={ARC_DATA.geometry} frustumCulled={false}>
         <lineBasicMaterial
@@ -562,18 +688,16 @@ function InteriorStorm({ reducedMotion, intensityRef }: InteriorStormProps) {
         />
       </lineSegments>
 
-      <points ref={trailRef} geometry={TRAIL_DATA.geometry} frustumCulled={false}>
-        <pointsMaterial
+      <lineSegments ref={trailRef} geometry={TRAIL_DATA.geometry} frustumCulled={false}>
+        <lineBasicMaterial
           ref={trailMaterialRef}
-          color="#b88cff"
+          color="#68dfff"
           transparent
           opacity={0}
-          size={0.9}
-          sizeAttenuation
           depthWrite={false}
           blending={AdditiveBlending}
         />
-      </points>
+      </lineSegments>
     </group>
   );
 }
@@ -619,11 +743,13 @@ function ExteriorPlasmaField({ materialRef, scale = 1, opacityBoost = 1 }: Exter
             vec3 localDir = normalize(vLocalPosition);
             vec3 viewDir = normalize(cameraPosition - vWorldPosition);
             float rim = pow(1.0 - abs(dot(normalize(vNormalWorld), viewDir)), 2.4);
+            float frontFacing = pow(abs(dot(normalize(vNormalWorld), viewDir)), 1.2);
 
             float cloud = fbm(localDir * 4.0 + vec3(uTime * 0.05, -uTime * 0.03, uTime * 0.04));
             float aurora = fbm(localDir * 8.4 + vec3(-uTime * 0.14, uTime * 0.09, -uTime * 0.08));
             float plasma = smoothstep(0.5, 0.92, cloud * 0.7 + aurora * 0.8);
             float haze = smoothstep(0.18, 0.86, cloud) * (0.32 + rim * 0.68);
+            float frontalGlow = smoothstep(0.24, 0.94, cloud * 0.52 + aurora * 0.42);
             float pulse = 0.72 + sin(uTime * 0.6) * 0.08 + sin(uTime * 1.13) * 0.05;
 
             vec3 cyan = vec3(0.16, 0.82, 1.0);
@@ -634,9 +760,11 @@ function ExteriorPlasmaField({ materialRef, scale = 1, opacityBoost = 1 }: Exter
             color *= pulse;
             color += cyan * plasma * (0.8 + uActivity * 0.8);
             color += vec3(0.7, 0.92, 1.0) * rim * 0.3;
+            color += cyan * frontalGlow * frontFacing * (0.22 + uActivity * 0.46);
 
             float alpha = (plasma * 0.34 + haze * 0.28 + rim * 0.24) * (0.42 + uActivity * 0.95) * uOpacityBoost;
-            if (alpha < 0.02) discard;
+            alpha += frontalGlow * frontFacing * (0.08 + uActivity * 0.18) * uOpacityBoost;
+            if (alpha < 0.004) discard;
             gl_FragColor = vec4(color, alpha);
           }
         `}
@@ -891,8 +1019,8 @@ function ExteriorStorm({ reducedMotion, activityRef }: ExteriorEnergyProps) {
       chargedParticleMaterialRef.current.opacity = 0.06 + activity * 0.12;
     }
     if (flareMaterialRef.current) {
-      flareMaterialRef.current.opacity = Math.min(0.28, 0.03 + flareEnergy / flareSeeds.length * 10 + activity * 0.08);
-      flareMaterialRef.current.size = 0.14 + activity * 0.34;
+      flareMaterialRef.current.opacity = Math.min(0.22, 0.015 + flareEnergy / flareSeeds.length * 6 + activity * 0.04);
+      flareMaterialRef.current.size = 0.08 + activity * 0.2;
     }
   });
 
@@ -965,59 +1093,130 @@ export function DigitalPlanet({ reducedMotion, scrollState }: DigitalPlanetProps
   const plasmaFieldMaterialRef = useRef<ShaderMaterial>(null);
   const distortionFieldMaterialRef = useRef<ShaderMaterial>(null);
   const interiorVolumeMaterialRef = useRef<ShaderMaterial>(null);
+  const interiorCoreFieldMaterialRef = useRef<ShaderMaterial>(null);
+  const directionalLightRef = useRef<DirectionalLight>(null);
+  const cyanOuterLightRef = useRef<PointLight>(null);
+  const purpleOuterLightRef = useRef<PointLight>(null);
   const innerStormLight = useRef<PointLight>(null);
   const center = useMemo(() => PLANET_CENTER.clone(), []);
   const interiorIntensityRef = useRef(0);
   const exteriorActivityRef = useRef(0.22);
+  const deepCoreTravelRef = useRef(0);
+  const approachMixRef = useRef(0);
+  const atmosphereMixRef = useRef(0);
+  const insideMixRef = useRef(0);
+  const deepTravelMixRef = useRef(0);
 
-  useFrame(({ camera, clock }) => {
+  useFrame(({ camera, clock }, delta) => {
     if (!groupRef.current) return;
 
+    const dt = Math.min(delta || 1 / 60, 1 / 30);
     const time = clock.elapsedTime;
     const progress = scrollState.current.progress;
     const distanceToCenter = camera.position.distanceTo(center);
-    const approach = remapClamped(distanceToCenter, SURFACE_START_DISTANCE, SURFACE_END_DISTANCE);
-    const approachInverted = 1 - approach;
-    const insideProgress = MathUtils.clamp(1 - remapClamped(distanceToCenter, INSIDE_START_DISTANCE, INSIDE_FULL_DISTANCE), 0, 1);
+    const rawApproach = 1 - remapClamped(distanceToCenter, SURFACE_START_DISTANCE, SURFACE_END_DISTANCE);
+    const rawAtmosphere = MathUtils.clamp(
+      (ATMOSPHERE_START_DISTANCE - distanceToCenter) / (ATMOSPHERE_START_DISTANCE - ATMOSPHERE_FULL_DISTANCE),
+      0,
+      1
+    );
+    const rawInside = MathUtils.clamp(
+      (INSIDE_START_DISTANCE - distanceToCenter) / (INSIDE_START_DISTANCE - INSIDE_FULL_DISTANCE),
+      0,
+      1
+    );
+    const rawDeepCoreTravel = MathUtils.smoothstep(progress, 0.84, 1) * MathUtils.smoothstep(rawInside, 0.12, 0.98);
     const glowBoost = MathUtils.smoothstep(progress, 0.22, 0.92);
     const driftStrength = reducedMotion ? 0.45 : 1;
 
-    interiorIntensityRef.current = insideProgress;
-    exteriorActivityRef.current = MathUtils.clamp(0.22 + approachInverted * 0.66 + glowBoost * 0.24, 0.22, 1);
+    approachMixRef.current = MathUtils.damp(approachMixRef.current, rawApproach, reducedMotion ? 8.2 : 6.6, dt);
+    atmosphereMixRef.current = MathUtils.damp(atmosphereMixRef.current, rawAtmosphere, reducedMotion ? 8.2 : 6.6, dt);
+    insideMixRef.current = MathUtils.damp(insideMixRef.current, rawInside, reducedMotion ? 8.4 : 6.9, dt);
+    deepTravelMixRef.current = MathUtils.damp(deepTravelMixRef.current, rawDeepCoreTravel, reducedMotion ? 7.6 : 6.1, dt);
 
-    groupRef.current.rotation.y = time * (reducedMotion ? 0.022 : 0.034);
-    groupRef.current.rotation.x = Math.sin(time * 0.11) * 0.038 * driftStrength;
-    groupRef.current.rotation.z = Math.cos(time * 0.09) * 0.026 * driftStrength;
+    const approachInverted = approachMixRef.current;
+    const atmosphereProgress = atmosphereMixRef.current;
+    const insideProgress = insideMixRef.current;
+    const deepCoreTravel = deepTravelMixRef.current;
+    const surfaceFade = 1 - MathUtils.smoothstep(insideProgress, 0.18, 0.94);
+    const surfacePresence = MathUtils.clamp(0.34 + surfaceFade * 0.66, 0.34, 1);
+    const atmosphereBridge = MathUtils.smoothstep(atmosphereProgress, 0.06, 0.98);
+    const interiorReveal = MathUtils.clamp(atmosphereBridge * 0.28 + insideProgress * 0.88 + deepCoreTravel * 0.24, 0, 1);
+
+    deepCoreTravelRef.current = deepCoreTravel;
+    interiorIntensityRef.current = interiorReveal;
+    exteriorActivityRef.current = MathUtils.clamp((0.26 + approachInverted * 0.5 + atmosphereProgress * 0.22 + glowBoost * 0.1) * (0.58 + surfacePresence * 0.42), 0.2, 1);
+
+    groupRef.current.rotation.y = time * (reducedMotion ? 0.016 : 0.025);
+    groupRef.current.rotation.x = Math.sin(time * 0.1) * 0.024 * driftStrength;
+    groupRef.current.rotation.z = Math.cos(time * 0.08) * 0.016 * driftStrength;
 
     if (shellMaterialRef.current) {
       shellMaterialRef.current.uniforms.uTime.value = time;
-      shellMaterialRef.current.uniforms.uApproach.value = approachInverted + glowBoost * 0.25;
-      shellMaterialRef.current.uniforms.uInside.value = insideProgress;
-      shellMaterialRef.current.uniforms.uOpacityBoost.value = 1;
+      shellMaterialRef.current.uniforms.uApproach.value = approachInverted + glowBoost * 0.22;
+      shellMaterialRef.current.uniforms.uInside.value = insideProgress * 0.82;
+      shellMaterialRef.current.uniforms.uOpacityBoost.value = 0.78 + surfacePresence * 0.34 + atmosphereProgress * 0.08;
     }
 
     if (auraMaterialRef.current) {
       auraMaterialRef.current.uniforms.uTime.value = time;
-      auraMaterialRef.current.uniforms.uApproach.value = approachInverted + glowBoost * 0.45;
-      auraMaterialRef.current.uniforms.uInside.value = insideProgress * 0.9;
-      auraMaterialRef.current.uniforms.uOpacityBoost.value = 0.9;
+      auraMaterialRef.current.uniforms.uApproach.value = approachInverted + glowBoost * 0.18;
+      auraMaterialRef.current.uniforms.uInside.value = insideProgress * 0.62;
+      auraMaterialRef.current.uniforms.uOpacityBoost.value = 0.12 + surfacePresence * 0.14;
     }
 
     if (plasmaFieldMaterialRef.current) {
       plasmaFieldMaterialRef.current.uniforms.uTime.value = time;
       plasmaFieldMaterialRef.current.uniforms.uActivity.value = exteriorActivityRef.current;
-      plasmaFieldMaterialRef.current.uniforms.uOpacityBoost.value = 1;
+      plasmaFieldMaterialRef.current.uniforms.uOpacityBoost.value = 0.54 + surfacePresence * 0.46;
     }
 
     if (distortionFieldMaterialRef.current) {
       distortionFieldMaterialRef.current.uniforms.uTime.value = time;
       distortionFieldMaterialRef.current.uniforms.uActivity.value = exteriorActivityRef.current;
-      distortionFieldMaterialRef.current.uniforms.uOpacityBoost.value = 0.9;
+      distortionFieldMaterialRef.current.uniforms.uOpacityBoost.value = 0.08 + surfacePresence * 0.14;
     }
 
     if (interiorVolumeMaterialRef.current) {
       interiorVolumeMaterialRef.current.uniforms.uTime.value = time;
-      interiorVolumeMaterialRef.current.uniforms.uIntensity.value = MathUtils.smoothstep(insideProgress, 0.04, 0.96);
+      interiorVolumeMaterialRef.current.uniforms.uIntensity.value = interiorReveal;
+      interiorVolumeMaterialRef.current.uniforms.uTravel.value = deepCoreTravel;
+    }
+
+    if (interiorCoreFieldMaterialRef.current) {
+      interiorCoreFieldMaterialRef.current.uniforms.uTime.value = time;
+      interiorCoreFieldMaterialRef.current.uniforms.uIntensity.value = MathUtils.clamp(atmosphereBridge * 0.18 + insideProgress * 0.74 + deepCoreTravel * 0.32, 0, 1);
+      interiorCoreFieldMaterialRef.current.uniforms.uTravel.value = deepCoreTravel;
+    }
+
+    const directionalLight = directionalLightRef.current;
+    if (directionalLight) {
+      directionalLight.intensity = MathUtils.damp(
+        directionalLight.intensity,
+        0.78 + approachInverted * 0.18 - insideProgress * 0.06 + atmosphereProgress * 0.08,
+        reducedMotion ? 8.2 : 6.2,
+        dt
+      );
+    }
+
+    const cyanOuterLight = cyanOuterLightRef.current;
+    if (cyanOuterLight) {
+      cyanOuterLight.intensity = MathUtils.damp(
+        cyanOuterLight.intensity,
+        8 + approachInverted * 6.2 + atmosphereProgress * 2.8 - insideProgress * 1.6,
+        reducedMotion ? 8.4 : 6.4,
+        dt
+      );
+    }
+
+    const purpleOuterLight = purpleOuterLightRef.current;
+    if (purpleOuterLight) {
+      purpleOuterLight.intensity = MathUtils.damp(
+        purpleOuterLight.intensity,
+        3.8 + approachInverted * 3 + atmosphereProgress * 1.4 - insideProgress * 0.55,
+        reducedMotion ? 8.4 : 6.4,
+        dt
+      );
     }
 
     const stormLight = innerStormLight.current;
@@ -1027,7 +1226,8 @@ export function DigitalPlanet({ reducedMotion, scrollState }: DigitalPlanetProps
         Math.cos(time * 0.28) * 9,
         Math.sin(time * 0.22) * 14
       );
-      stormLight.intensity = 2 + insideProgress * 24 + glowBoost * 6;
+      const targetStormIntensity = 5 + atmosphereProgress * 4 + insideProgress * 12 + deepCoreTravel * 8 + glowBoost * 2;
+      stormLight.intensity = MathUtils.damp(stormLight.intensity, targetStormIntensity, reducedMotion ? 8 : 5.4, dt);
     }
   });
 
@@ -1036,18 +1236,19 @@ export function DigitalPlanet({ reducedMotion, scrollState }: DigitalPlanetProps
 
   return (
     <group ref={groupRef} position={center.toArray()}>
-      <directionalLight position={[28, 16, 44]} intensity={0.9} color="#e7f5ff" />
-      <pointLight position={[12, 8, 32]} intensity={16} distance={220} color={pointColor} />
-      <pointLight position={[-20, -10, 24]} intensity={7} distance={180} color={purpleColor} />
-      <pointLight ref={innerStormLight} position={[0, 0, 0]} intensity={8} distance={260} color="#49ddff" />
+      <directionalLight ref={directionalLightRef} position={[28, 16, 44]} intensity={0.86} color="#e7f5ff" />
+      <pointLight ref={cyanOuterLightRef} position={[12, 8, 32]} intensity={12} distance={220} color={pointColor} />
+      <pointLight ref={purpleOuterLightRef} position={[-20, -10, 24]} intensity={5.4} distance={180} color={purpleColor} />
+      <pointLight ref={innerStormLight} position={[0, 0, 0]} intensity={5} distance={260} color="#49ddff" />
 
       <ExteriorPlasmaField materialRef={plasmaFieldMaterialRef} scale={1.11} opacityBoost={1} />
-      <DistortionField materialRef={distortionFieldMaterialRef} scale={1.16} opacityBoost={0.85} />
+      <DistortionField materialRef={distortionFieldMaterialRef} scale={1.12} opacityBoost={0.3} />
       <ExteriorStorm reducedMotion={reducedMotion} activityRef={exteriorActivityRef} />
       <ElectricShell materialRef={shellMaterialRef} />
-      <ElectricShell materialRef={auraMaterialRef} scale={1.018} opacityBoost={0.82} />
+      <ElectricShell materialRef={auraMaterialRef} scale={1.01} opacityBoost={0.28} />
       <InteriorEnergyVolume materialRef={interiorVolumeMaterialRef} />
-      <InteriorStorm reducedMotion={reducedMotion} intensityRef={interiorIntensityRef} />
+      <InteriorCoreField materialRef={interiorCoreFieldMaterialRef} />
+      <InteriorStorm reducedMotion={reducedMotion} intensityRef={interiorIntensityRef} travelRef={deepCoreTravelRef} />
     </group>
   );
 }

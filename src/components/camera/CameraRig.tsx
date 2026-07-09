@@ -56,7 +56,7 @@ export function CameraRig({ path, scrollState, reducedMotion }: CameraRigProps) 
     smoothedProgress.current = MathUtils.damp(
       smoothedProgress.current,
       state.targetProgress,
-      reducedMotion ? 7.5 : 5.2,
+      reducedMotion ? 8.4 : 6.8,
       dt
     );
 
@@ -66,35 +66,35 @@ export function CameraRig({ path, scrollState, reducedMotion }: CameraRigProps) 
     const velocityInfluence = MathUtils.clamp(state.velocity / 2800, 0, 1);
 
     const idleDrift = new Vector3(
-      Math.sin(time * 0.34) * 0.045,
-      Math.cos(time * 0.26) * 0.035,
-      Math.sin(time * 0.18) * 0.06
+      Math.sin(time * 0.28) * 0.02,
+      Math.cos(time * 0.22) * 0.016,
+      Math.sin(time * 0.16) * 0.028
     ).multiplyScalar(idleStrength);
 
     const stabilizer = new Vector3(
-      Math.sin(time * 0.58 + state.progress * Math.PI * 1.2) * 0.014,
-      Math.cos(time * 0.44 + state.progress * Math.PI * 0.8) * 0.011,
+      Math.sin(time * 0.46 + state.progress * Math.PI * 1.1) * 0.006,
+      Math.cos(time * 0.38 + state.progress * Math.PI * 0.74) * 0.005,
       0
     ).multiplyScalar(idleStrength * (1 - Math.min(1, velocityInfluence * 1.35)));
 
     const desiredPosition = pose.position.clone().add(idleDrift).add(stabilizer);
 
-    camera.position.x = MathUtils.damp(camera.position.x, desiredPosition.x, reducedMotion ? 8.2 : 5.6, dt);
-    camera.position.y = MathUtils.damp(camera.position.y, desiredPosition.y, reducedMotion ? 8.2 : 5.6, dt);
-    camera.position.z = MathUtils.damp(camera.position.z, desiredPosition.z, reducedMotion ? 8.2 : 5.6, dt);
+    camera.position.x = MathUtils.damp(camera.position.x, desiredPosition.x, reducedMotion ? 9 : 7.4, dt);
+    camera.position.y = MathUtils.damp(camera.position.y, desiredPosition.y, reducedMotion ? 9 : 7.4, dt);
+    camera.position.z = MathUtils.damp(camera.position.z, desiredPosition.z, reducedMotion ? 9 : 7.4, dt);
 
     desiredLook.current.copy(pose.target).add(
       origin.set(
-        Math.sin(time * 0.22) * 0.035 * idleStrength,
-        Math.cos(time * 0.18) * 0.028 * idleStrength,
+        Math.sin(time * 0.18) * 0.016 * idleStrength,
+        Math.cos(time * 0.15) * 0.012 * idleStrength,
         0
       )
     );
 
     desiredUp.current.copy(pose.up);
 
-    smoothedLook.current.lerp(desiredLook.current, 1 - Math.exp(-dt * (reducedMotion ? 7 : 5.2)));
-    smoothedUp.current.lerp(desiredUp.current, 1 - Math.exp(-dt * (reducedMotion ? 7.5 : 4.8))).normalize();
+    smoothedLook.current.lerp(desiredLook.current, 1 - Math.exp(-dt * (reducedMotion ? 8.6 : 7.2)));
+    smoothedUp.current.lerp(desiredUp.current, 1 - Math.exp(-dt * (reducedMotion ? 8.6 : 6.8))).normalize();
 
     camera.up.copy(smoothedUp.current);
     camera.lookAt(smoothedLook.current);
@@ -102,11 +102,11 @@ export function CameraRig({ path, scrollState, reducedMotion }: CameraRigProps) 
     baseQuaternion.current.copy(camera.quaternion);
     bankQuaternion.current.setFromAxisAngle(
       pose.tangent,
-      pose.bank + Math.sin(time * 0.16 + state.progress * Math.PI * 2) * 0.01 * idleStrength
+      pose.bank * 0.55 + Math.sin(time * 0.14 + state.progress * Math.PI * 2) * 0.003 * idleStrength
     );
     targetQuaternion.current.copy(baseQuaternion.current).multiply(bankQuaternion.current);
 
-    camera.quaternion.slerp(targetQuaternion.current, 1 - Math.exp(-dt * (reducedMotion ? 8 : 4.6)));
+    camera.quaternion.slerp(targetQuaternion.current, 1 - Math.exp(-dt * (reducedMotion ? 8.8 : 7.4)));
 
     if (window.__maceCameraPose) {
       window.__maceCameraPose = {

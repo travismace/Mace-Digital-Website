@@ -35,13 +35,14 @@ export function CinematicCameraExperience() {
     direction: 1,
     isInteracting: false,
   });
+
   const updateScrollState = useCallback((next: ScrollState) => {
     scrollState.current = next;
   }, []);
 
   return (
     <main ref={rootRef} className="camera-architecture" aria-label="Cinematic camera architecture testbed">
-      <ScrollController rootRef={rootRef} onChange={updateScrollState} scrollDistanceVh={400} />
+      <ScrollController rootRef={rootRef} onChange={updateScrollState} scrollDistanceVh={260} />
 
       <div className="camera-architecture__journey">
         <div className="camera-architecture__stage">

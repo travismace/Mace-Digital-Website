@@ -515,9 +515,9 @@ export function SpaceEnvironment({ reducedMotion, scrollState }: SpaceEnvironmen
       <ShootingStar reducedMotion={reducedMotion} />
 
       <EffectComposer multisampling={0}>
-        <Bloom intensity={0.08} luminanceThreshold={0.62} luminanceSmoothing={0.88} mipmapBlur />
+        <Bloom intensity={0.2} luminanceThreshold={0.34} luminanceSmoothing={0.72} mipmapBlur />
         <Noise opacity={0.005} premultiply />
-        <Vignette eskil={false} offset={0.22} darkness={0.86} />
+        <Vignette eskil={false} offset={0.18} darkness={0.64} />
       </EffectComposer>
     </>
   );

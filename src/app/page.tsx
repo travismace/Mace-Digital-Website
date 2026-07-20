@@ -1,5 +1,5 @@
-import { CinematicCameraExperience } from "../components/CinematicCameraExperience";
+import { MaceDigitalHomepage } from "../components/MaceDigitalHomepage";
 
 export default function Home() {
-  return <CinematicCameraExperience />;
+  return <MaceDigitalHomepage />;
 }

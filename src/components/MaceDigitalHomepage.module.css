@@ -1,0 +1,1459 @@
+.page {
+  position: relative;
+  overflow-x: clip;
+  --construction-channel: rgba(102, 112, 124, 0.22);
+  --construction-primary-dormant: rgba(202, 217, 232, 0.26);
+  --construction-secondary-dormant: rgba(172, 186, 201, 0.12);
+  --construction-node-dormant: rgba(218, 228, 238, 0.72);
+  --construction-node-aura-dormant: rgba(218, 228, 238, 0.1);
+  --construction-current-soft: rgba(216, 230, 242, 0.72);
+  --construction-current-hot: rgba(250, 252, 255, 1);
+  background:
+    radial-gradient(circle at 50% -10%, rgba(255, 255, 255, 0.09), transparent 24%),
+    linear-gradient(180deg, #06070a 0%, #0a0c10 38%, #0b0e13 100%);
+  color: #f4f6f9;
+}
+
+.backgroundGrid,
+.backgroundGlow {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.backgroundGrid {
+  opacity: 0.16;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 112px 112px;
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.96), rgba(0, 0, 0, 0.45) 60%, transparent 100%);
+}
+
+.backgroundGlow {
+  background:
+    radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.11), transparent 28%),
+    radial-gradient(circle at 10% 20%, rgba(74, 90, 114, 0.22), transparent 24%),
+    radial-gradient(circle at 86% 18%, rgba(112, 123, 137, 0.12), transparent 20%);
+  opacity: 0.62;
+}
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 1rem;
+  width: min(100% - 2rem, 1320px);
+  margin: 0 auto;
+  padding: 1rem 0;
+}
+
+.brandLockup,
+.topbarCta {
+  position: relative;
+  z-index: 1;
+}
+
+.brandLockup {
+  display: grid;
+  gap: 0.22rem;
+  padding: 0.9rem 1rem;
+  border-radius: 1.1rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(8, 10, 14, 0.82);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.brandTag,
+.sectionLabel,
+.cardIndex,
+.wordmarkHeader span,
+.metricCard span,
+.timelineStep span,
+.processCard span,
+.outcomeRow span,
+.systemCard span,
+.miniCard span,
+.websiteNav span {
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+}
+
+.brandTag {
+  font-size: 0.62rem;
+  color: rgba(255, 255, 255, 0.52);
+}
+
+.brandWord {
+  font-family: var(--font-chivo), Arial, sans-serif;
+  font-size: 1.04rem;
+  line-height: 1;
+  letter-spacing: -0.045em;
+  color: rgba(239, 243, 248, 0.84);
+}
+
+.nav {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.55rem;
+  padding: 0.45rem;
+  border-radius: 1.2rem;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: linear-gradient(180deg, rgba(12, 15, 20, 0.92), rgba(7, 9, 13, 0.78));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.nav a {
+  display: grid;
+  gap: 0.18rem;
+  padding: 0.62rem 0.78rem;
+  border-radius: 0.9rem;
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0));
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.nav a span {
+  font-size: 0.54rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.36);
+}
+
+.nav a strong {
+  font-family: var(--font-chivo), Arial, sans-serif;
+  font-size: 0.68rem;
+  font-weight: 540;
+  letter-spacing: -0.015em;
+  color: rgba(244, 247, 250, 0.84);
+}
+
+.topbarCta,
+.primaryButton,
+.secondaryButton {
+  display: inline-grid;
+  gap: 0.14rem;
+  align-items: center;
+  justify-content: center;
+  min-height: 3.35rem;
+  padding: 0.88rem 1.1rem;
+  border-radius: 0.95rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  transition:
+    transform 240ms ease,
+    border-color 240ms ease,
+    box-shadow 240ms ease,
+    background 240ms ease;
+}
+
+.topbarCta::before,
+.primaryButton::before,
+.secondaryButton::before {
+  content: "";
+  position: absolute;
+  inset: 0.2rem;
+  border-radius: 0.78rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.topbarCta span,
+.primaryButton span,
+.secondaryButton span {
+  font-size: 0.54rem;
+  line-height: 1;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+.topbarCta strong,
+.primaryButton strong,
+.secondaryButton strong {
+  font-family: var(--font-chivo), Arial, sans-serif;
+  font-size: 0.78rem;
+  line-height: 1.16;
+  font-weight: 560;
+  letter-spacing: -0.015em;
+}
+
+.topbarCta,
+.primaryButton {
+  color: #05070a;
+  background:
+    linear-gradient(180deg, rgba(250, 251, 253, 0.98), rgba(207, 214, 222, 0.94)),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.24), rgba(255, 255, 255, 0));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.38),
+    inset 0 -10px 18px rgba(0, 0, 0, 0.18),
+    0 16px 34px rgba(0, 0, 0, 0.2);
+}
+
+.secondaryButton {
+  color: rgba(244, 246, 249, 0.92);
+  background:
+    linear-gradient(180deg, rgba(18, 22, 28, 0.96), rgba(10, 12, 16, 0.9)),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.topbarCta:hover,
+.primaryButton:hover,
+.secondaryButton:hover {
+  transform: translateY(-1px);
+}
+
+.section {
+  position: relative;
+  z-index: 1;
+  width: min(100% - 2rem, 1320px);
+  margin: 0 auto;
+  padding: clamp(4.5rem, 8vw, 7rem) 0;
+}
+
+.constructionLayer {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.constructionSvg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.constructionSvgMobile {
+  display: none;
+}
+
+.constructionChannel,
+.constructionPrimary,
+.constructionSecondary,
+.constructionFramePath,
+.constructionNode,
+.constructionNodeAura,
+.constructionPulseSoft,
+.constructionPulseHot {
+  fill: none;
+  stroke-linecap: square;
+  stroke-linejoin: miter;
+  vector-effect: non-scaling-stroke;
+  shape-rendering: geometricPrecision;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+}
+
+.constructionChannel {
+  stroke: var(--construction-channel);
+  stroke-width: 2.6;
+}
+
+.constructionPrimary {
+  stroke: var(--construction-primary-dormant);
+  stroke-width: 1.46;
+}
+
+.constructionSecondary {
+  stroke: var(--construction-secondary-dormant);
+  stroke-width: 0.78;
+}
+
+.constructionFramePath {
+  stroke: rgba(196, 210, 224, 0.1);
+  stroke-width: 0.8;
+}
+
+.constructionNodeAura {
+  fill: var(--construction-node-aura-dormant);
+}
+
+.constructionNode {
+  fill: var(--construction-node-dormant);
+}
+
+.constructionPulseSoft {
+  stroke: var(--construction-current-soft);
+  stroke-width: 3.6;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 7px rgba(222, 235, 246, 0.14));
+}
+
+.constructionPulseHot {
+  stroke: var(--construction-current-hot);
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 8px rgba(250, 252, 255, 0.22));
+}
+
+.heroSection {
+  min-height: min(100svh, 980px);
+  display: grid;
+  align-content: center;
+  padding-top: clamp(2.5rem, 5vw, 4rem);
+}
+
+.sectionRail {
+  position: relative;
+  z-index: 2;
+  width: clamp(7rem, 16vw, 14rem);
+  height: 1px;
+  margin-bottom: 1.25rem;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0));
+  opacity: 0.9;
+}
+
+.sectionFrame {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  gap: clamp(1.4rem, 2vw, 2rem);
+  padding: clamp(0.4rem, 1vw, 0.9rem) 0 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+  will-change: transform, clip-path, border-color, box-shadow;
+}
+
+.page [data-light-surface] {
+  position: relative;
+}
+
+.page [data-light-surface]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at var(--pointer-x, 50%) var(--pointer-y, 50%), rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.03) 18%, rgba(255, 255, 255, 0) 48%);
+  opacity: calc(var(--pointer-opacity, 0) * 0.75);
+  transition: opacity 220ms ease;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.page [data-light-surface] > * {
+  position: relative;
+  z-index: 1;
+}
+
+.page [data-magnetic] {
+  will-change: transform;
+}
+
+.page [data-engraved-wordmark],
+.page [data-engraved-copy] {
+  background: linear-gradient(180deg, rgba(250, 252, 255, 0.9), rgba(191, 201, 212, 0.54));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.05),
+    0 -1px 0 rgba(0, 0, 0, 0.42);
+}
+
+.page [data-engraved-copy] {
+  letter-spacing: -0.02em;
+}
+
+.systemSectionFrame {
+  gap: clamp(1.5rem, 2.4vw, 2.4rem);
+}
+
+.inlineSystemStage {
+  position: relative;
+  display: grid;
+  gap: 1.2rem;
+  padding: clamp(1.2rem, 2vw, 1.6rem);
+  border-radius: 1.7rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.015)),
+    rgba(10, 13, 18, 0.78);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 20px 54px rgba(0, 0, 0, 0.18);
+}
+
+.inlineSystemHeader {
+  position: relative;
+  z-index: 3;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.inlineSystemCopy {
+  margin: 0;
+  max-width: 52rem;
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.65;
+}
+
+.heroFrame {
+  grid-template-columns: minmax(0, 1.15fr) minmax(18rem, 0.95fr);
+  align-items: center;
+  min-height: 78svh;
+}
+
+.heroCopy,
+.sectionIntro,
+.heroVisual,
+.ctaActions {
+  position: relative;
+  z-index: 3;
+}
+
+.sectionLabel {
+  display: inline-flex;
+  width: fit-content;
+  padding: 0;
+  border: 0;
+  background: none;
+  font-family: var(--font-chivo), Arial, sans-serif;
+  font-size: 0.58rem;
+  letter-spacing: 0.24em;
+  color: rgba(255, 255, 255, 0.48);
+  will-change: transform, clip-path, border-color;
+}
+
+.heroTitle,
+.sectionTitle {
+  margin: 0;
+  font-family: var(--font-chivo), Arial, sans-serif;
+  font-weight: 560;
+  letter-spacing: -0.04em;
+  color: #f5f7fb;
+  text-wrap: balance;
+  will-change: transform, clip-path;
+}
+
+.heroTitle {
+  max-width: 12.4ch;
+  font-size: clamp(2.1rem, 4.35vw, 4rem);
+  line-height: 0.99;
+}
+
+.sectionTitle {
+  max-width: 19.5ch;
+  font-size: clamp(1.55rem, 2.7vw, 2.85rem);
+  line-height: 1.02;
+}
+
+.introFrame .sectionTitle {
+  max-width: 15.5ch;
+  font-size: clamp(1.7rem, 2.6vw, 2.7rem);
+}
+
+.systemSectionFrame .sectionTitle,
+.workFrame .sectionTitle,
+.processFrame .sectionTitle {
+  max-width: 16.8ch;
+  font-size: clamp(1.45rem, 2.3vw, 2.45rem);
+}
+
+.outcomesFrame .sectionTitle,
+.contactFrame .sectionTitle {
+  max-width: 14.8ch;
+  font-size: clamp(1.35rem, 2.15vw, 2.25rem);
+  line-height: 1.04;
+}
+
+.heroBody,
+.sectionBody,
+.serviceCard p,
+.caseStudyCard p,
+.processCard p,
+.systemCard p,
+.miniCard strong,
+.editorialPanel p,
+.timelineStep strong,
+.websiteHeroBlock p,
+.enquiryCard p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.serviceCard p,
+.caseStudyCard p,
+.processCard p,
+.systemCard p,
+.editorialPanel p,
+.websiteHeroBlock p,
+.enquiryCard p,
+.inlineSystemCopy {
+  font-size: 0.94rem;
+  line-height: 1.72;
+}
+
+.heroBody,
+.sectionBody {
+  max-width: 36rem;
+  font-size: clamp(0.98rem, 1.02vw, 1.05rem);
+  line-height: 1.78;
+  will-change: transform, clip-path;
+}
+
+.heroCopy,
+.sectionIntro {
+  display: grid;
+  gap: 0.82rem;
+}
+
+.sectionIntro {
+  max-width: 44rem;
+}
+
+.heroActions,
+.ctaActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.9rem;
+}
+
+.heroVisual {
+  display: grid;
+  gap: 1rem;
+  align-content: start;
+}
+
+.heroSignalStrip {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+  gap: 0.75rem;
+}
+
+.signalCell {
+  display: grid;
+  gap: 0.3rem;
+  min-height: 5.1rem;
+  padding: 0.35rem 0 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+  border-left: 0;
+  background: none;
+}
+
+.signalCell span {
+  font-size: 0.56rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.42);
+}
+
+.signalCell strong {
+  font-family: var(--font-chivo), Arial, sans-serif;
+  font-size: 0.78rem;
+  line-height: 1.4;
+  letter-spacing: -0.018em;
+  color: rgba(242, 246, 250, 0.84);
+}
+
+.wordmarkMonolith {
+  position: relative;
+  display: grid;
+  gap: 1rem;
+  min-height: 29rem;
+  padding: 1.35rem;
+  border-radius: 1.8rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background:
+    radial-gradient(circle at 50% 16%, rgba(255, 255, 255, 0.08), transparent 26%),
+    linear-gradient(160deg, rgba(236, 241, 246, 0.14), rgba(116, 126, 137, 0.07) 18%, rgba(10, 12, 15, 0.96) 62%);
+  overflow: hidden;
+}
+
+.wordmarkHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 0.54rem;
+  color: rgba(255, 255, 255, 0.48);
+}
+
+.wordmarkDisplay {
+  align-self: center;
+  font-family: var(--font-chivo), Arial, sans-serif;
+  font-size: clamp(4.2rem, 9vw, 6.8rem);
+  line-height: 0.9;
+  letter-spacing: -0.06em;
+  color: rgba(245, 248, 252, 0.16);
+  -webkit-text-stroke: 1px rgba(255, 255, 255, 0.14);
+  text-shadow:
+    0 14px 36px rgba(0, 0, 0, 0.26),
+    0 1px 0 rgba(255, 255, 255, 0.16);
+}
+
+.wordmarkDisplay[data-engraved-wordmark] {
+  color: transparent;
+  background:
+    linear-gradient(180deg, rgba(244, 248, 252, 0.78), rgba(168, 178, 188, 0.28)),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.26), rgba(255, 255, 255, 0));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-stroke: 1px rgba(236, 241, 246, 0.08);
+  filter: drop-shadow(0 18px 28px rgba(0, 0, 0, 0.22));
+}
+
+.wordmarkBase {
+  height: 1px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0));
+}
+
+.heroStatRail {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.9rem;
+}
+
+.metricCard,
+.serviceCard,
+.caseStudyCard,
+.processCard,
+.systemCard,
+.miniCard,
+.timelineStep,
+.editorialPanel,
+.outcomesPanel,
+.enquiryCard {
+  will-change: transform, clip-path, opacity;
+}
+
+.metricCard {
+  display: grid;
+  gap: 0.35rem;
+  padding: 0.45rem 0 0;
+  min-height: 0;
+  align-content: end;
+  border-radius: 0;
+  background: none;
+  border: 0;
+  box-shadow: none;
+}
+
+.metricCard:nth-child(1) {
+  border-top: 1px solid rgba(223, 231, 239, 0.24);
+}
+
+.metricCard:nth-child(2) {
+  transform: translateY(0.35rem);
+  border-top: 1px solid rgba(223, 231, 239, 0.18);
+}
+
+.metricCard:nth-child(3) {
+  min-height: 0;
+  border-top: 1px solid rgba(223, 231, 239, 0.14);
+}
+
+.metricCard span,
+.cardIndex,
+.systemCard span,
+.miniCard span,
+.timelineStep span,
+.processCard span {
+  font-family: var(--font-chivo), Arial, sans-serif;
+  font-size: 0.54rem;
+  letter-spacing: 0.22em;
+  color: rgba(255, 255, 255, 0.48);
+}
+
+.metricCard strong,
+.serviceCard h3,
+.caseStudyCard h3,
+.processCard h3,
+.systemCard strong,
+.outcomeRow strong,
+.enquiryCard strong,
+.websiteHeroBlock strong {
+  font-family: var(--font-chivo), Arial, sans-serif;
+  font-size: 0.92rem;
+  line-height: 1.34;
+  font-weight: 550;
+  letter-spacing: -0.018em;
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.editorialPanel {
+  max-width: 42rem;
+  padding: 0;
+  border-radius: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+}
+
+.splitPanel::before,
+.splitPanel::after {
+  display: none;
+}
+
+.introFrame {
+  grid-template-columns: minmax(0, 1.05fr) minmax(20rem, 0.95fr);
+  align-items: start;
+}
+
+.introManifesto {
+  display: grid;
+  gap: 1rem;
+  align-content: start;
+}
+
+.introCalibration {
+  display: grid;
+  gap: 0.4rem;
+  padding: 0.45rem 0 0;
+  border-left: 0;
+  border-bottom: 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+  background: none;
+}
+
+.introCalibration span {
+  font-size: 0.56rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.42);
+}
+
+.introCalibration strong {
+  font-size: 1rem;
+  line-height: 1.42;
+  color: rgba(244, 247, 251, 0.88);
+}
+
+.editorialLine {
+  width: 4rem;
+  height: 1px;
+  margin-bottom: 1rem;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.76), rgba(255, 255, 255, 0));
+}
+
+.editorialPanel p {
+  font-size: 0.98rem;
+  line-height: 1.8;
+}
+
+.serviceGrid,
+.caseStudyRail,
+.processGrid {
+  display: grid;
+  gap: 1rem;
+}
+
+.serviceGrid {
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.82fr) minmax(0, 1.08fr);
+  align-items: stretch;
+}
+
+.serviceCard,
+.caseStudyCard,
+.processCard {
+  display: grid;
+  gap: 0.65rem;
+  padding: 0.55rem 0 0;
+}
+
+.serviceCard {
+  min-height: 15rem;
+  align-content: end;
+  border-radius: 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.16);
+  background: none;
+  box-shadow: none;
+}
+
+.serviceCard:nth-child(1) {
+  background: none;
+}
+
+.serviceCard:nth-child(2) {
+  min-height: 12.4rem;
+  transform: translateY(1.2rem);
+  border-top-color: rgba(255, 255, 255, 0.12);
+}
+
+.serviceCard:nth-child(3) {
+  min-height: 17rem;
+  border-top-color: rgba(255, 255, 255, 0.2);
+}
+
+.caseStudyRail {
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.9fr) minmax(0, 0.95fr);
+  align-items: end;
+}
+
+.workFrame {
+  gap: 1.4rem;
+}
+
+.caseStudyCard {
+  min-height: 17rem;
+  align-content: start;
+  border-radius: 0;
+  background: none;
+  border: 0;
+  box-shadow: none;
+}
+
+.caseStudyCard:nth-child(2) {
+  min-height: 13.8rem;
+  transform: translateY(1.2rem);
+}
+
+.caseStudyCard:nth-child(3) {
+  min-height: 15.2rem;
+  transform: translateY(0.6rem);
+}
+
+.caseStudyVisual {
+  min-height: 11rem;
+  border-radius: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background:
+    radial-gradient(circle at 70% 25%, rgba(255, 255, 255, 0.2), transparent 30%),
+    linear-gradient(145deg, rgba(38, 43, 52, 0.92), rgba(10, 12, 16, 0.96));
+}
+
+.specimenBay::before,
+.specimenBay::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: calc(50% - 0.2rem);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.015)),
+    linear-gradient(145deg, rgba(19, 23, 29, 0.84), rgba(9, 11, 15, 0.9));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
+  transition: transform 460ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.specimenBay::before {
+  left: 0;
+  border-right: 1px solid rgba(255,255,255,0.08);
+}
+
+.specimenBay::after {
+  right: 0;
+  border-left: 1px solid rgba(255,255,255,0.08);
+}
+
+.caseStudyCard:hover .specimenBay::before {
+  transform: translateX(-8%);
+}
+
+.caseStudyCard:hover .specimenBay::after {
+  transform: translateX(8%);
+}
+
+.workshopSection {
+  padding-bottom: clamp(5rem, 9vw, 8rem);
+}
+
+.workshopWrap {
+  position: relative;
+  min-height: 185svh;
+  margin-top: 1rem;
+}
+
+.workshopSticky {
+  position: sticky;
+  top: 5.8rem;
+}
+
+.workshopStage {
+  position: relative;
+  display: grid;
+  gap: 1rem;
+  min-height: calc(100svh - 7.75rem);
+  padding: 1.15rem;
+  border-radius: 2rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.015) 18%, rgba(255, 255, 255, 0) 36%),
+    linear-gradient(145deg, rgba(20, 24, 29, 0.97), rgba(8, 10, 14, 0.96));
+  overflow: hidden;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 -18px 30px rgba(0, 0, 0, 0.18),
+    0 28px 90px rgba(0, 0, 0, 0.22);
+}
+
+.workshopGlow {
+  position: absolute;
+  inset: 12% 26% 56%;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.11), rgba(255, 255, 255, 0) 72%);
+  filter: blur(72px);
+  opacity: 0.5;
+}
+
+.workshopBlueprintField,
+.workshopPrimaryRow,
+.workshopOperationsRow,
+.workshopFooterRail,
+.workshopCaption {
+  position: relative;
+  z-index: 3;
+}
+
+.workshopBlueprintField {
+  min-height: 6.5rem;
+  border-radius: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.01)),
+    rgba(11, 14, 19, 0.56);
+  overflow: hidden;
+}
+
+.workshopGuideHorizontal,
+.workshopGuideVertical,
+.workshopGuideVerticalAlt,
+.workshopConnector {
+  position: absolute;
+  display: block;
+  background: linear-gradient(90deg, rgba(224, 231, 238, 0.84), rgba(224, 231, 238, 0.08));
+  opacity: 0.96;
+  transform-origin: left center;
+}
+
+.workshopGuideHorizontal {
+  left: 4%;
+  right: 4%;
+  top: 1.5rem;
+  height: 1px;
+}
+
+.workshopGuideVertical,
+.workshopGuideVerticalAlt {
+  top: 1rem;
+  bottom: 1rem;
+  width: 1px;
+  background: linear-gradient(180deg, rgba(224, 231, 238, 0.84), rgba(224, 231, 238, 0.08));
+}
+
+.workshopGuideVertical {
+  left: 46%;
+}
+
+.workshopGuideVerticalAlt {
+  left: 74%;
+}
+
+.workshopBlueprintSvg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.workshopBlueprintSvg path {
+  fill: none;
+  stroke: rgba(230, 236, 242, 0.9);
+  stroke-width: 1.62;
+  stroke-linecap: square;
+  stroke-linejoin: miter;
+  vector-effect: non-scaling-stroke;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+  filter: drop-shadow(0 0 2px rgba(244, 247, 250, 0.08));
+}
+
+.workshopPrimaryRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(18rem, 0.85fr);
+  gap: 1rem;
+}
+
+.workshopWebsite,
+.workshopSystemCard,
+.workshopMiniCard {
+  border-radius: 1.4rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.016)),
+    rgba(12, 15, 20, 0.86);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.workshopWebsite {
+  display: grid;
+  gap: 1rem;
+  min-height: 22rem;
+  padding: 1rem;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02)),
+    linear-gradient(145deg, rgba(18, 22, 28, 0.98), rgba(8, 10, 13, 0.96));
+}
+
+.workshopWebsiteChrome {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: center;
+}
+
+.workshopWebsiteDots {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.workshopWebsiteDots span {
+  width: 0.62rem;
+  height: 0.62rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.32);
+}
+
+.workshopWebsiteMeta,
+.workshopKicker,
+.workshopSystemCard span,
+.workshopMiniCard span,
+.workshopMediaCaption {
+  font-size: 0.58rem;
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.workshopWebsiteNav {
+  display: flex;
+  gap: 1rem;
+  padding-bottom: 0.85rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.workshopWebsiteNav span,
+.workshopKicker,
+.workshopInterfaceText {
+  display: inline-flex;
+}
+
+.workshopWebsiteBody {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(16rem, 0.8fr);
+  gap: 1rem;
+  align-items: stretch;
+}
+
+.workshopWebsiteCopy {
+  display: grid;
+  gap: 0.8rem;
+  align-content: start;
+}
+
+.workshopInterfaceHeadline {
+  margin: 0;
+  max-width: 10ch;
+  font-size: clamp(1.8rem, 3vw, 3rem);
+  line-height: 0.98;
+  letter-spacing: -0.05em;
+  color: rgba(245, 247, 251, 0.94);
+}
+
+.workshopInterfaceText,
+.workshopEnquiryCard p,
+.workshopSystemCard p,
+.workshopMiniCard p {
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.68);
+}
+
+.workshopInterfaceCta {
+  display: inline-flex;
+  width: fit-content;
+  padding: 0.9rem 1.15rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: linear-gradient(180deg, rgba(245, 247, 249, 0.96), rgba(207, 214, 221, 0.92));
+  color: #06080a;
+  font-size: 0.84rem;
+  font-weight: 600;
+}
+
+.workshopInterfaceMedia {
+  display: grid;
+  gap: 0.7rem;
+  align-content: end;
+}
+
+.workshopMediaSurface {
+  min-height: 10.5rem;
+  border-radius: 1.15rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background:
+    radial-gradient(circle at 72% 24%, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0) 24%),
+    linear-gradient(145deg, rgba(44, 51, 61, 0.94), rgba(11, 14, 19, 0.96));
+}
+
+.workshopEnquiryCard {
+  display: grid;
+  gap: 0.45rem;
+  padding: 0.95rem 1rem;
+  border-radius: 1.1rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.workshopEnquiryCard span {
+  font-size: 0.58rem;
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.workshopEnquiryCard strong,
+.workshopSystemCard strong,
+.workshopMiniCard strong {
+  font-size: 0.98rem;
+  line-height: 1.38;
+  color: rgba(244, 247, 251, 0.9);
+}
+
+.workshopSystemsColumn {
+  display: grid;
+  gap: 1rem;
+  align-content: start;
+}
+
+.workshopSystemCard,
+.workshopMiniCard {
+  display: grid;
+  gap: 0.4rem;
+  padding: 1rem;
+}
+
+.workshopConnector {
+  position: relative;
+  left: 1rem;
+  width: calc(100% - 2rem);
+  height: 1px;
+  background: linear-gradient(90deg, rgba(224, 231, 238, 0.8), rgba(224, 231, 238, 0.08));
+}
+
+.workshopOperationsRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(14rem, 0.8fr);
+  gap: 1rem;
+}
+
+.workshopFooterRail {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 0.6rem;
+}
+
+.timelineStep {
+  min-height: 4.6rem;
+  padding: 0.72rem 0.78rem;
+}
+
+.workshopCaption {
+  margin: 0;
+  font-size: clamp(1.2rem, 2vw, 1.8rem);
+  line-height: 1.12;
+  letter-spacing: -0.04em;
+  color: rgba(245, 247, 251, 0.92);
+}
+
+.timelineStep strong {
+  font-size: 0.74rem;
+  line-height: 1.38;
+}
+
+.outcomesPanel {
+  display: grid;
+  gap: 0.75rem;
+  padding: 0;
+  border-radius: 0;
+  background: none;
+  border: 0;
+  box-shadow: none;
+}
+
+.outcomesFrame {
+  grid-template-columns: minmax(0, 1fr) minmax(19rem, 0.92fr);
+  align-items: start;
+}
+
+.outcomeRow {
+  display: grid;
+  grid-template-columns: 3rem 1fr;
+  gap: 0.85rem;
+  align-items: start;
+  padding: 0.95rem 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.outcomeRow span {
+  width: auto;
+  height: auto;
+  margin-top: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  font-size: 0.56rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.42);
+}
+
+.processGrid {
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.9fr) minmax(0, 1.08fr) minmax(0, 0.86fr);
+  align-items: start;
+}
+
+.processFrame {
+  gap: 1.5rem;
+}
+
+.processCard {
+  min-height: 15rem;
+  align-content: start;
+  border-radius: 0;
+  overflow: visible;
+  border: 0;
+  background: none;
+  box-shadow: none;
+}
+
+.processCard::before {
+  content: "";
+  position: absolute;
+  left: 1rem;
+  right: 1rem;
+  top: 0.9rem;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(255,255,255,0.36), rgba(255,255,255,0.06));
+}
+
+.processCard::after {
+  content: "";
+  position: absolute;
+  right: -0.65rem;
+  top: 50%;
+  width: 1.2rem;
+  height: 1.2rem;
+  margin-top: -0.6rem;
+  border: 1px solid rgba(255,255,255,0.09);
+  border-left: 0;
+  border-radius: 0 0.5rem 0.5rem 0;
+  opacity: 0.7;
+}
+
+.processCard:last-child::after {
+  display: none;
+}
+
+.processCard:nth-child(2) {
+  transform: translateY(1.4rem);
+  min-height: 17rem;
+}
+
+.processCard:nth-child(3) {
+  transform: translateY(2.8rem);
+  min-height: 18.5rem;
+}
+
+.processCard:nth-child(4) {
+  transform: translateY(1rem);
+  min-height: 16rem;
+}
+
+.ctaSection {
+  padding-bottom: clamp(6rem, 10vw, 9rem);
+}
+
+.contactFrame {
+  grid-template-columns: minmax(0, 1.2fr) minmax(18rem, 0.8fr);
+  align-items: end;
+}
+
+.ctaFrame {
+  gap: 1.2rem;
+}
+
+.ctaActions {
+  align-content: end;
+}
+
+@media (max-width: 1180px) {
+  .topbar {
+    grid-template-columns: 1fr;
+  }
+
+  .nav {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .heroFrame,
+  .introFrame,
+  .outcomesFrame,
+  .contactFrame,
+  .workshopPrimaryRow,
+  .workshopWebsiteBody,
+  .workshopOperationsRow {
+    grid-template-columns: 1fr;
+  }
+
+  .serviceGrid,
+  .caseStudyRail {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .processGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .processCard::after {
+    display: none;
+  }
+
+  .workshopFooterRail {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+}
+
+@media (max-width: 900px) {
+  .constructionSvgDesktop {
+    display: none;
+  }
+
+  .constructionSvgMobile {
+    display: block;
+  }
+
+  .section {
+    width: min(100% - 1rem, 1320px);
+    padding: 4rem 0;
+  }
+
+  .heroFrame {
+    min-height: auto;
+  }
+
+  .heroStatRail,
+  .serviceGrid,
+  .caseStudyRail,
+  .processGrid,
+  .workshopFooterRail,
+  .workshopOperationsRow,
+  .heroSignalStrip {
+    grid-template-columns: 1fr;
+  }
+
+  .workshopWrap {
+    min-height: 0;
+  }
+
+  .workshopSticky {
+    position: relative;
+    top: auto;
+  }
+
+  .workshopStage {
+    min-height: auto;
+  }
+
+  .workshopPrimaryRow {
+    grid-template-columns: 1fr;
+  }
+
+  .serviceCard,
+  .caseStudyCard,
+  .processCard,
+  .metricCard {
+    min-height: auto;
+    transform: none;
+  }
+
+  .serviceCard:nth-child(2),
+  .caseStudyCard:nth-child(2),
+  .caseStudyCard:nth-child(3),
+  .processCard:nth-child(2),
+  .processCard:nth-child(3),
+  .processCard:nth-child(4),
+  .metricCard:nth-child(2) {
+    transform: none;
+  }
+
+  .workshopWebsiteBody {
+    grid-template-columns: 1fr;
+  }
+
+  .workshopGuideVertical,
+  .workshopGuideVerticalAlt {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .topbar {
+    width: min(100% - 1rem, 1320px);
+  }
+
+  .brandLockup,
+  .nav,
+  .topbarCta {
+    width: 100%;
+  }
+
+  .heroTitle {
+    max-width: 11.5ch;
+    font-size: clamp(1.8rem, 8vw, 2.85rem);
+    line-height: 1;
+  }
+
+  .sectionTitle {
+    max-width: 15.5ch;
+    font-size: clamp(1.34rem, 6.6vw, 2.15rem);
+    line-height: 1.05;
+  }
+
+  .heroBody,
+  .sectionBody,
+  .serviceCard p,
+  .caseStudyCard p,
+  .processCard p,
+  .systemCard p,
+  .editorialPanel p,
+  .websiteHeroBlock p,
+  .enquiryCard p,
+  .inlineSystemCopy {
+    font-size: 0.92rem;
+    line-height: 1.7;
+  }
+
+  .heroActions,
+  .ctaActions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .primaryButton,
+  .secondaryButton,
+  .topbarCta {
+    width: 100%;
+  }
+
+  .wordmarkMonolith {
+    min-height: 22rem;
+  }
+
+  .wordmarkDisplay {
+    font-size: clamp(3.1rem, 16vw, 4.9rem);
+  }
+
+  .sectionFrame,
+  .workshopStage {
+    padding: 1rem;
+    border-radius: 1.4rem;
+  }
+}

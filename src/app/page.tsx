@@ -1,5 +1,5 @@
-import { MaceDigitalHomepage } from "../components/MaceDigitalHomepage";
+import { ContinuousMachineExperience } from "../components/ContinuousMachineExperience";
 
 export default function Home() {
-  return <MaceDigitalHomepage />;
+  return <ContinuousMachineExperience />;
 }

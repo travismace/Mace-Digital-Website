@@ -1,0 +1,31 @@
+.journey {
+  position: relative;
+  min-height: 900vh;
+  background: #dfe3e8;
+}
+
+.stage {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  width: 100%;
+  overflow: hidden;
+}
+
+.accessibleHint {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (max-width: 700px) {
+  .journey {
+    min-height: 760vh;
+  }
+}

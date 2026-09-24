@@ -7,10 +7,12 @@ import {
   CatmullRomCurve3,
   Color,
   DoubleSide,
+  ExtrudeGeometry,
   Group,
   MathUtils,
   Mesh,
   MeshPhysicalMaterial,
+  Shape,
   TubeGeometry,
   Vector3,
 } from "three";
@@ -41,30 +43,56 @@ function CameraPilot({ progress }: CameraPilotProps) {
   return null;
 }
 
-function Panel({ z, side, turn }: { z: number; side: -1 | 1; turn: number }) {
+function createBonnetShape(side: -1 | 1) {
+  const mirror = (value: number) => value * side;
+  const shape = new Shape();
+
+  shape.moveTo(mirror(0.65), -10.8);
+  shape.quadraticCurveTo(mirror(4.4), -12.4, mirror(10.4), -8.6);
+  shape.quadraticCurveTo(mirror(12.3), -4.3, mirror(10.1), -0.6);
+  shape.quadraticCurveTo(mirror(12.6), 3.8, mirror(8.8), 10.6);
+  shape.quadraticCurveTo(mirror(4.2), 12.2, mirror(0.65), 10.1);
+  shape.quadraticCurveTo(mirror(0.15), 7.2, mirror(0.45), 3.8);
+  shape.quadraticCurveTo(mirror(0.9), 0, mirror(0.4), -3.7);
+  shape.quadraticCurveTo(mirror(0.1), -7.5, mirror(0.65), -10.8);
+
+  return shape;
+}
+
+function BonnetPanel({ z, side, drift }: { z: number; side: -1 | 1; drift: number }) {
+  const geometry = useMemo(
+    () =>
+      new ExtrudeGeometry(createBonnetShape(side), {
+        depth: 0.72,
+        bevelEnabled: true,
+        bevelSegments: 5,
+        bevelSize: 0.3,
+        bevelThickness: 0.34,
+        curveSegments: 36,
+      }),
+    [side]
+  );
   const material = useMemo(
     () =>
       new MeshPhysicalMaterial({
-        color: new Color("#edf1f5"),
-        roughness: 0.2,
-        metalness: 0.72,
+        color: new Color("#f1f5f8"),
+        roughness: 0.16,
+        metalness: 0.58,
         clearcoat: 1,
-        clearcoatRoughness: 0.08,
-        iridescence: 0.22,
+        clearcoatRoughness: 0.045,
+        iridescence: 0.32,
         iridescenceIOR: 1.3,
-        iridescenceThicknessRange: [180, 460],
+        iridescenceThicknessRange: [190, 520],
+        side: DoubleSide,
       }),
     []
   );
 
   return (
-    <group position={[side * 5.5, 0.48, z]} rotation={[turn * side, side * 0.018, side * -0.008]}>
-      <mesh material={material} castShadow receiveShadow>
-        <boxGeometry args={[11.3, 0.78, 15.8, 8, 2, 8]} />
-      </mesh>
-      <mesh position={[-side * 0.02, -0.42, 0]} rotation={[0, 0, 0]} receiveShadow>
-        <boxGeometry args={[11.36, 0.06, 15.84]} />
-        <meshPhysicalMaterial color="#c5ccd4" metalness={0.85} roughness={0.35} />
+    <group position={[0, 0.05, z]} rotation={[-Math.PI / 2 + drift * side, 0, side * 0.012]}>
+      <mesh geometry={geometry} material={material} castShadow receiveShadow />
+      <mesh position={[0, 0, -0.08]} geometry={geometry} scale={[1.005, 1.005, 0.18]} receiveShadow>
+        <meshPhysicalMaterial color="#bac4ce" metalness={0.72} roughness={0.22} side={DoubleSide} />
       </mesh>
     </group>
   );
@@ -73,12 +101,12 @@ function Panel({ z, side, turn }: { z: number; side: -1 | 1; turn: number }) {
 function EnergyConduit({ start, bend }: { start: number; bend: number }) {
   const geometry = useMemo(() => {
     const points = [
-      new Vector3(0.1, -0.2, start + 6),
-      new Vector3(bend * 0.1, -0.32, start + 1.5),
-      new Vector3(bend * 0.18, -0.42, start - 4.5),
-      new Vector3(bend * 0.1, -0.35, start - 10),
+      new Vector3(0.15, -0.72, start + 7),
+      new Vector3(bend * 0.55, -0.88, start + 2),
+      new Vector3(bend * 1.15, -0.95, start - 4.5),
+      new Vector3(bend * 0.42, -0.84, start - 11),
     ];
-    return new TubeGeometry(new CatmullRomCurve3(points), 36, 0.23, 10, false);
+    return new TubeGeometry(new CatmullRomCurve3(points), 72, 0.2, 18, false);
   }, [bend, start]);
 
   return (
@@ -86,7 +114,7 @@ function EnergyConduit({ start, bend }: { start: number; bend: number }) {
       <mesh geometry={geometry}>
         <meshPhysicalMaterial color="#06121d" metalness={0.9} roughness={0.18} clearcoat={1} />
       </mesh>
-      <mesh geometry={geometry} scale={0.56}>
+      <mesh geometry={geometry} scale={0.46}>
         <meshBasicMaterial color="#18cfff" toneMapped={false} />
       </mesh>
     </group>
@@ -97,9 +125,9 @@ function Machine({ progress }: { progress: React.MutableRefObject<number> }) {
   const root = useRef<Group>(null);
   const panelData = useMemo(
     () =>
-      Array.from({ length: 25 }, (_, index) => ({
-        z: 12 - index * 13,
-        turn: 0.016 + (index % 4) * 0.006,
+      Array.from({ length: 15 }, (_, index) => ({
+        z: 15 - index * 21.2,
+        drift: 0.008 + (index % 4) * 0.004,
       })),
     []
   );
@@ -112,30 +140,23 @@ function Machine({ progress }: { progress: React.MutableRefObject<number> }) {
 
   return (
     <group ref={root}>
-      <mesh position={[0, -1.7, -machineLength / 2]} receiveShadow>
-        <boxGeometry args={[28, 2.2, machineLength + 70]} />
-        <meshPhysicalMaterial color="#060a0e" metalness={0.95} roughness={0.17} />
+      <mesh position={[0, -1.9, -machineLength / 2]} receiveShadow>
+        <boxGeometry args={[31, 2.4, machineLength + 70]} />
+        <meshPhysicalMaterial color="#04080d" metalness={0.96} roughness={0.13} clearcoat={1} />
       </mesh>
 
       {panelData.flatMap((panel) => [
-        <Panel key={`left-${panel.z}`} z={panel.z} side={-1} turn={panel.turn} />,
-        <Panel key={`right-${panel.z}`} z={panel.z} side={1} turn={panel.turn} />,
+        <BonnetPanel key={`left-${panel.z}`} z={panel.z} side={-1} drift={panel.drift} />,
+        <BonnetPanel key={`right-${panel.z}`} z={panel.z} side={1} drift={panel.drift} />,
       ])}
 
-      <EnergyConduit start={-68} bend={-1} />
-      <EnergyConduit start={-145} bend={1} />
-      <EnergyConduit start={-220} bend={-1} />
+      <EnergyConduit start={-94} bend={-1} />
+      <EnergyConduit start={-176} bend={1} />
+      <EnergyConduit start={-252} bend={-1} />
 
-      {[-76, -153, -228].map((z) => (
-        <mesh key={z} position={[0, -0.18, z]} rotation={[-Math.PI / 2, 0, 0]}>
-          <circleGeometry args={[1.05, 48]} />
-          <meshBasicMaterial color="#0bd6ff" transparent opacity={0.5} toneMapped={false} side={DoubleSide} />
-        </mesh>
-      ))}
-
-      <pointLight position={[0, 0.8, -73]} color="#16cfff" intensity={10} distance={22} />
-      <pointLight position={[0, 0.8, -150]} color="#16cfff" intensity={11} distance={24} />
-      <pointLight position={[0, 0.8, -225]} color="#16cfff" intensity={11} distance={24} />
+      <pointLight position={[-0.6, 0.2, -99]} color="#16cfff" intensity={5.6} distance={14} />
+      <pointLight position={[0.8, 0.2, -181]} color="#16cfff" intensity={6.2} distance={14} />
+      <pointLight position={[-0.6, 0.2, -257]} color="#16cfff" intensity={6.2} distance={14} />
     </group>
   );
 }
@@ -144,15 +165,15 @@ function Scene({ progress }: { progress: React.MutableRefObject<number> }) {
   return (
     <>
       <color attach="background" args={["#dfe3e8"]} />
-      <fog attach="fog" args={["#dfe3e8", 18, 112]} />
-      <ambientLight intensity={1.35} color="#f6fbff" />
-      <directionalLight position={[8, 14, 6]} intensity={5.4} color="#ffffff" castShadow />
-      <directionalLight position={[-8, 5, -45]} intensity={3.2} color="#cce5ff" />
+      <fog attach="fog" args={["#dfe3e8", 15, 88]} />
+      <ambientLight intensity={1.15} color="#f6fbff" />
+      <directionalLight position={[8, 14, 6]} intensity={6.5} color="#ffffff" castShadow />
+      <directionalLight position={[-8, 5, -45]} intensity={3.8} color="#cce5ff" />
       <CameraPilot progress={progress} />
       <Machine progress={progress} />
       <EffectComposer multisampling={0}>
-        <Bloom intensity={0.72} luminanceThreshold={0.68} luminanceSmoothing={0.8} mipmapBlur />
-        <Vignette eskil={false} offset={0.16} darkness={0.42} />
+        <Bloom intensity={0.5} luminanceThreshold={0.76} luminanceSmoothing={0.82} mipmapBlur />
+        <Vignette eskil={false} offset={0.18} darkness={0.3} />
       </EffectComposer>
     </>
   );
